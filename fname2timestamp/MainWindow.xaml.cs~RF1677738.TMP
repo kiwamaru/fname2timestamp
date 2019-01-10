@@ -1,0 +1,254 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+using System.Collections.ObjectModel;
+using System.Text.RegularExpressions;
+
+using DataGridFiles;
+
+namespace fname2timestamp
+{
+    /// <summary>
+    /// MainWindow.xaml の相互作用ロジック
+    /// </summary>
+    public partial class MainWindow : Window
+    {
+        public ObservableCollection<DataGridFile> dataGridFiles;
+        //private uint index;
+        ProgresBarWindow pbw;
+
+        private int fileCount;
+
+        public MainWindow()
+        {
+            InitializeComponent();
+            //index = 0;
+            dataGridFiles = new ObservableCollection<DataGridFile>();
+            dataGridFiles.CollectionChanged += orderlist_CollectionChanged;
+            this.dataGrid.ItemsSource = dataGridFiles;
+
+            
+        }
+        void orderlist_CollectionChanged(object sender,System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            int listfiles = dataGridFiles.Count;
+            FilesInfoTextBlock.Text = listfiles + "個のファイル";
+
+        }
+        private List<string> CreateDropFileList(string[] files)
+        {
+            var allfiles = new List<string>();
+  
+            if (files != null)
+            {
+                foreach (var f in files)
+                {
+                    //フォルダの場合
+                    if (System.IO.Directory.Exists(f))
+                    {
+                        fileCount += System.IO.Directory.GetFiles(f, "*", System.IO.SearchOption.AllDirectories).Length;
+                        //サブフォルダ含めて全ファイルリストを取得
+                        IEnumerable<string> d_under_files = System.IO.Directory.EnumerateFiles(f, "*", System.IO.SearchOption.AllDirectories);
+                        foreach (var duf in d_under_files)
+                        {
+                            if (System.IO.File.Exists(duf))
+                            {
+                                allfiles.Add(duf);
+                            }
+                        }
+                    }
+                    //ファイルの場合
+                    else if (System.IO.File.Exists(f))
+                    {
+                        allfiles.Add(f);
+
+                    }
+                }
+            }
+            return allfiles;
+        }
+        private List<int> GetDataTimeList(string fname)
+        {
+            Regex dtimePattern_spl = new Regex(@"^(\d+)[\D]+(\d+)[\D]+(\d+)[\D]+(\d+)[\D]+(\d+)(?:[\D]+(\d+)){0,1}", System.Text.RegularExpressions.RegexOptions.Compiled);
+            Regex dtimePattern_seq = new Regex(@"^(\d{4})(\d{2})(\d{2})[\D]{0,1}(\d{0,2})(\d{0,2})(\d{0,2})", System.Text.RegularExpressions.RegexOptions.Compiled);
+            List<int> dtl = new List<int>();
+            Match m_spl = dtimePattern_spl.Match(fname);
+            Match m_seq = dtimePattern_seq.Match(fname);
+            if (m_spl.Success || m_seq.Success)
+            {
+                Match m = m_spl.Success ? m_spl : m_seq;
+                for (int i = 1; i < m.Groups.Count; i++)
+                {
+                    for (int j = 0; j < m.Groups[i].Captures.Count; j++)
+                    {
+                        if (m.Groups[i].Captures[j].Value != "")
+                        {
+                            dtl.Add(int.Parse(m.Groups[i].Captures[j].Value));
+                        }
+                    }
+                }
+                if (dtl.Count >= 3)//少なくとも年月日は必要
+                {
+                    for (int i = dtl.Count; i < 6; i++)//時分秒がない場合の補完
+                    {
+                        dtl.Add(0);
+                    }
+                }
+            }
+            return dtl;
+        }
+        private DataGridFile convertDataGridFile(string fpath)
+        {
+            string errmsg = "";
+            bool isValid = false;
+            DateTime dt = new DateTime();
+            System.IO.FileInfo fi = new System.IO.FileInfo(fpath);
+            System.IO.FileAttributes attr = System.IO.File.GetAttributes(fpath);
+            string fname = System.IO.Path.GetFileName(fpath);
+            string fext = System.IO.Path.GetExtension(fpath);
+            try
+            {
+                //読み取り専用属性があるか調べる
+                if ((attr & System.IO.FileAttributes.ReadOnly) == System.IO.FileAttributes.ReadOnly)
+                {
+                    throw new System.UnauthorizedAccessException("ファイルが読み取り専用属性");
+                }
+
+                List<int> dtl = GetDataTimeList(fname);
+                if (dtl.Count == 6)
+                {
+                    if (dtl[0] > 2099 || dtl[0] < 1970)
+                    {
+                        throw new System.ArgumentException("年が異常値 1970-2099まで");
+                    }
+                    dt = new DateTime(dtl[0], dtl[1], dtl[2], dtl[3], dtl[4], dtl[5]);
+                    isValid = true;
+                }
+                else
+                {
+                    throw new System.ArgumentException("日時情報解析エラー");
+                }
+            }
+            catch (Exception exception)
+            {
+                errmsg = exception.Message;
+            }
+            DataGridFile dtf = new DataGridFile
+            {
+                //num = ++index,
+                isValid = isValid,
+                path = fpath,
+                name = fname,
+                ext = fext,
+                update_dtime = System.IO.File.GetLastWriteTime(fpath),
+                access_dtime = System.IO.File.GetLastAccessTime(fpath),
+                size = fi.Length,
+                f2t_dtime = dt,
+                err_message = errmsg,
+            };
+            return dtf;
+        }
+        private void Window_Drop(object sender, DragEventArgs e)
+        {
+
+            pbw = new ProgresBarWindow();
+            //var allfiles = new List<string>();
+            string[] files = e.Data.GetData(DataFormats.FileDrop) as string[];
+            var allfiles = CreateDropFileList(files);
+            if (allfiles.Count >= 50)
+            {
+                pbw.Show();
+            }
+            int fcount = 0;
+                
+            foreach (var f in allfiles)
+            {
+                Decimal per = (fcount / allfiles.Count);
+                pbw.FileRegexProgress((int)per*100);
+
+                dataGridFiles.Add(convertDataGridFile(f));
+                fcount++;
+            }
+            pbw.Close();
+
+        }
+
+        private void Window_PreviewDragOver(object sender, DragEventArgs e)
+        {
+            // ファイルをドロップされた場合のみ e.Handled を True にする
+            e.Handled = e.Data.GetDataPresent(DataFormats.FileDrop);
+        }
+        private void updateDataGirdFile(List<DataGridFile> list)
+        {
+            foreach (var o in list)
+            {
+                if (o.isValid && System.IO.File.Exists(o.path))
+                {
+                    try
+                    {
+                        // 更新日時をファイル名の時刻で更新する
+                        System.IO.File.SetLastWriteTime(o.path, o.f2t_dtime);
+                        o.update_dtime = System.IO.File.GetLastWriteTime(o.path);
+                        o.err_message = "変更完了";
+                    }
+                    catch (Exception exception)
+                    {
+                        //アクセス権限がない
+                        o.err_message = exception.Message;
+                    }
+                }
+            }
+        }
+        /**
+         * 選択されたデータを変換
+         */
+        private void btnSelExec_Click(object sender, RoutedEventArgs e)
+        {
+            List<DataGridFile> sel_list = dataGrid.SelectedItems.Cast<DataGridFile>().ToList();
+            updateDataGirdFile(sel_list);
+        }
+
+        /**
+         * 有効な全データを変換
+         */
+        private void btnAllExec_Click(object sender, RoutedEventArgs e)
+        {
+            List<DataGridFile> all_list = dataGrid.Items.Cast<DataGridFile>().ToList();
+            updateDataGirdFile(all_list);
+        }
+        /**
+         * 選択されたデータを変換リストから削除
+         */
+        private void btnSelDel_Click(object sender, RoutedEventArgs e)
+        {
+            List<DataGridFile> sel_list = dataGrid.SelectedItems.Cast<DataGridFile>().ToList();
+
+            foreach(var o in sel_list)
+            {
+                dataGridFiles.Remove(o);
+            }
+            
+
+        }
+        /**
+         * 全データを変換リストから削除
+         */
+        private void btnAllDel_Click(object sender, RoutedEventArgs e)
+        {
+            dataGridFiles.Clear();
+        }
+
+    }
+
+}

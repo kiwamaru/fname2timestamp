@@ -1,0 +1,183 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Data;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Navigation;
+using System.Windows.Shapes;
+using System.Collections.ObjectModel;
+using System.Text.RegularExpressions;
+
+using DataGridFiles;
+
+namespace fname2timestamp
+{
+    /// <summary>
+    /// MainWindow.xaml の相互作用ロジック
+    /// </summary>
+    public partial class MainWindow : Window
+    {
+        public ObservableCollection<DataGridFile> dataGridFiles;
+        //private uint index;
+
+        public MainWindow()
+        {
+            InitializeComponent();
+            //index = 0;
+            dataGridFiles = new ObservableCollection<DataGridFile>();
+            dataGridFiles.CollectionChanged += orderlist_CollectionChanged;
+            this.dataGrid.ItemsSource = dataGridFiles;
+
+            
+        }
+        void orderlist_CollectionChanged(object sender,System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+        {
+            int listfiles = dataGridFiles.Count;
+            FilesInfoTextBlock.Text = listfiles + "個のファイル";
+
+        }
+        private List<string> CreateDropFileList(string[] files)
+        {
+            var allfiles = new List<string>();
+  
+            if (files != null)
+            {
+                foreach (var f in files)
+                {
+                    //フォルダの場合
+                    if (System.IO.Directory.Exists(f))
+                    {
+                        //サブフォルダ含めて全ファイルリストを取得
+                        IEnumerable<string> d_under_files = System.IO.Directory.EnumerateFiles(f, "*", System.IO.SearchOption.AllDirectories);
+                        foreach (var duf in d_under_files)
+                        {
+                            if (System.IO.File.Exists(duf))
+                            {
+                                allfiles.Add(duf);
+                            }
+                        }
+                    }
+                    //ファイルの場合
+                    else if (System.IO.File.Exists(f))
+                    {
+                        allfiles.Add(f);
+
+                    }
+                }
+            }
+            return allfiles;
+        }
+        private DataGridFile convertDataGridFile(string fpath)
+        {
+            Regex dtimePattern_spl = new Regex(@"^(\d+)[\D]+(\d+)[\D]+(\d+)[\D]+(\d+)[\D]+(\d+)(?:[\D]+(\d+)){0,1}", System.Text.RegularExpressions.RegexOptions.Compiled);
+            Regex dtimePattern_seq = new Regex(@"^(\d{4})(\d{2})(\d{2})[\D]{0,1}(\d{0,2})(\d{0,2})(\d{0,2})", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+            System.IO.FileInfo fi = new System.IO.FileInfo(fpath);
+            List<int> dtl = new List<int>();
+            DateTime dt = new DateTime();
+            string name = System.IO.Path.GetFileName(f);
+            Match m_spl = dtimePattern_spl.Match(name);
+            Match m_seq = dtimePattern_seq.Match(name);
+            bool isValid = false;
+            if (m_spl.Success || m_seq.Success)
+            {
+                Match m = m_spl.Success ? m_spl : m_seq;
+                for (int i = 1; i < m.Groups.Count; i++)
+                {
+                    for (int j = 0; j < m.Groups[i].Captures.Count; j++)
+                    {
+                        if (m.Groups[i].Captures[j].Value != "")
+                        {
+                            dtl.Add(int.Parse(m.Groups[i].Captures[j].Value));
+                        }
+                    }
+                }
+                if (dtl.Count >= 3)//少なくとも年月日は必要
+                {
+                    for (int i = dtl.Count; i < 6; i++)//時分秒がない場合の補完
+                    {
+                        dtl.Add(0);
+                    }
+                    try
+                    {
+                        dt = new DateTime(dtl[0], dtl[1], dtl[2], dtl[3], dtl[4], dtl[5]);
+                        isValid = true;
+                    }
+                    catch (System.ArgumentOutOfRangeException exception)
+                    {
+                        //時刻情報が異常なため変換失敗
+                    }
+                }
+            }
+            else
+            {
+                dt = new DateTime();
+            }
+
+            return new DataGridFile
+            {
+                //num = ++index,
+                isValid = isValid,
+                path = fpath,
+                name = name,
+                update_dtime = System.IO.File.GetLastWriteTime(fpath),
+                access_dtime = System.IO.File.GetLastAccessTime(fpath),
+                size = fi.Length,
+                f2t_dtime = dt,
+            });
+        }
+        private void Window_Drop(object sender, DragEventArgs e)
+        {
+
+            //var allfiles = new List<string>();
+            string[] files = e.Data.GetData(DataFormats.FileDrop) as string[];
+            var allfiles = CreateDropFileList(files);
+            foreach (var f in allfiles)
+            {
+                dataGridFiles.Add(convertDataGridFile(f));
+            }
+
+        }
+
+        private void Window_PreviewDragOver(object sender, DragEventArgs e)
+        {
+            // ファイルをドロップされた場合のみ e.Handled を True にする
+            e.Handled = e.Data.GetDataPresent(DataFormats.FileDrop);
+        }
+
+        private void btnSelExec_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btnAllExec_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void btnSelDel_Click(object sender, RoutedEventArgs e)
+        {
+            List<DataGridFile> sel_list = dataGrid.SelectedItems.Cast<DataGridFile>().ToList();
+
+            foreach(var o in sel_list)
+            {
+                dataGridFiles.Remove(o);
+            }
+            
+
+        }
+        private void btnAllDel_Click(object sender, RoutedEventArgs e)
+        {
+            dataGridFiles.Clear();
+        }
+
+    }
+
+}
