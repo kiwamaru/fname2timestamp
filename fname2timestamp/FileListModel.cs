@@ -4,9 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace fname2timestamp
 {
@@ -14,9 +12,9 @@ namespace fname2timestamp
     /// <summary>
     /// ファイルリスト管理クラス
     /// </summary>
-    class fileListModel:BindableBase
+    public class FileListModel : BindableBase
     {
-        public ObservableCollection<DataGridFile> dataGridFiles;//DataGridにbindingしているデータクラス
+        public ObservableCollection<DataGridFile> dataGridFiles { get; set; } = new ObservableCollection<DataGridFile>();//DataGridにbindingしているデータクラス
 
 
         /// <summary>
@@ -25,11 +23,8 @@ namespace fname2timestamp
         private int fileListCount;
         public int FileListCount
         {
-            get { return fileListCount; }
-            set
-            {
-                SetProperty(ref fileListCount, value);
-            }
+            get => fileListCount;
+            set => SetProperty(ref fileListCount, value);
         }
         /// <summary>
         /// 変換可能なファイル数
@@ -37,11 +32,8 @@ namespace fname2timestamp
         private int canFileListCount;
         public int CanFileListCount
         {
-            get { return canFileListCount; }
-            set
-            {
-                SetProperty(ref canFileListCount, value);
-            }
+            get => canFileListCount;
+            set => SetProperty(ref canFileListCount, value);
         }
 
         /// <summary>
@@ -50,11 +42,8 @@ namespace fname2timestamp
         private int currentProgress;
         public int CurrentProgress
         {
-            get { return currentProgress; }
-            set
-            {
-                SetProperty(ref currentProgress, value);
-            }
+            get => currentProgress;
+            set => SetProperty(ref currentProgress, value);
         }
         public enum UPDATE_FLAG
         {
@@ -62,9 +51,9 @@ namespace fname2timestamp
             UPDATE_DATE = 1 << 1,//更新日時を変更
 
         };
-        public fileListModel()
+        public FileListModel()
         {
-            dataGridFiles = new ObservableCollection<DataGridFile>();
+            //dataGridFiles = new ObservableCollection<DataGridFile>();
             dataGridFiles.CollectionChanged += DataGridFiles_CollectionChanged;
 
         }
@@ -82,18 +71,18 @@ namespace fname2timestamp
         /// <returns></returns>        
         public List<string> CreateDropFileList(string[] files)
         {
-            var allfiles = new List<string>();
+            List<string> allfiles = new List<string>();
 
             if (files != null)
             {
-                foreach (var f in files)
+                foreach (string f in files)
                 {
                     //フォルダの場合
                     if (System.IO.Directory.Exists(f))
                     {
                         //サブフォルダ含めて全ファイルリストを取得
                         IEnumerable<string> d_under_files = System.IO.Directory.EnumerateFiles(f, "*", System.IO.SearchOption.AllDirectories);
-                        foreach (var duf in d_under_files)
+                        foreach (string duf in d_under_files)
                         {
                             if (System.IO.File.Exists(duf))
                             {
@@ -116,14 +105,14 @@ namespace fname2timestamp
         /// </summary>
         /// <param name="files"></param>
         /// <param name="upflag"></param>
-        public int DropFileListToDataGridFile(string[] files,UPDATE_FLAG upflag)
+        public int DropFileListToDataGridFile(string[] files, UPDATE_FLAG upflag)
         {
             int fcount = 0;
             CurrentProgress = 0;
 
-            var allfiles = CreateDropFileList(files);
+            List<string> allfiles = CreateDropFileList(files);
 
-            foreach (var f in allfiles)
+            foreach (string f in allfiles)
             {
                 CurrentProgress = ((fcount++ * 100) / allfiles.Count);
 
@@ -261,7 +250,7 @@ namespace fname2timestamp
         /// リストをオプションに従いリロードする
         /// </summary>
         /// <param name="upflag"></param>
-        public void UpdateList(fileListModel.UPDATE_FLAG upflag)
+        public void UpdateList(FileListModel.UPDATE_FLAG upflag)
         {
             /*List<DataGridFile> all_list = dataGrid.Items.Cast<DataGridFile>().ToList();
             for (int i = 0; i < all_list.Count; i++)
@@ -284,7 +273,7 @@ namespace fname2timestamp
         public bool ChangeTimeStamp(List<DataGridFile> list, UPDATE_FLAG upflag)
         {
             bool exist = false;
-            foreach (var o in list)
+            foreach (DataGridFile o in list)
             {
                 if (o.isValid && System.IO.File.Exists(o.path))
                 {
@@ -321,7 +310,7 @@ namespace fname2timestamp
         /// <param name="del_list"></param>
         public void RemoveDataGridFile(List<DataGridFile> del_list)
         {
-            foreach (var o in del_list)
+            foreach (DataGridFile o in del_list)
             {
                 dataGridFiles.Remove(o);
             }

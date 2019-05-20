@@ -10,7 +10,9 @@ namespace MyConverter
         {
             bool b = System.Convert.ToBoolean(value);
             if (b)
+            {
                 return "Yes";
+            }
 
             return "No";
         }
@@ -28,7 +30,9 @@ namespace MyConverter
             DateTime d = new DateTime();
             DateTime dt = System.Convert.ToDateTime(value);
             if (dt != d)
+            {
                 return value;
+            }
 
             return "--------------";
         }

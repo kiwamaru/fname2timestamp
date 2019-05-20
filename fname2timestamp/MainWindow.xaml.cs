@@ -1,22 +1,9 @@
-﻿using System;
+﻿using DataGridFiles;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
-using System.Collections.ObjectModel;
-using System.Text.RegularExpressions;
-using Prism.Mvvm;
-
-using DataGridFiles;
 
 namespace fname2timestamp
 {
@@ -26,22 +13,22 @@ namespace fname2timestamp
     public partial class MainWindow : Window
     {
         //private uint index;
-        ProgresBarWindow pbw;
+        private readonly ProgresBarWindow pbw;
 
-        private fileListModel fileListModel;
+        public FileListModel fileListModel { get; } = new FileListModel();
 
 
         public MainWindow()
         {
             InitializeComponent();
 
-            fileListModel = new fileListModel();
+            //fileListModel = new FileListModel();
             pbw = new ProgresBarWindow();
 
             fileListModel.PropertyChanged += FileListModel_PropertyChanged;
-            this.dataGrid.ItemsSource = fileListModel.dataGridFiles;
+            dataGrid.ItemsSource = fileListModel.dataGridFiles;
             FilesInfoTextBlock.Text = "↑ファイルをドロップしてください";
-            
+
         }
         protected override void OnClosed(EventArgs e)
         {
@@ -56,12 +43,12 @@ namespace fname2timestamp
         /// <param name="e"></param>
         private void FileListModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (!(sender is fileListModel))
+            if (!(sender is FileListModel))
             {
                 return;
             }
-            
-            if(e.PropertyName == "CurrentProgress")
+
+            if (e.PropertyName == "CurrentProgress")
             {
                 int progn = fileListModel.CurrentProgress;
                 if (progn > 0)
@@ -77,7 +64,8 @@ namespace fname2timestamp
             }
             else if (e.PropertyName == "FileListCount" || e.PropertyName == "CanFileListCount")
             {
-                if (fileListModel.FileListCount > 0) { 
+                if (fileListModel.FileListCount > 0)
+                {
                     FilesInfoTextBlock.Text = fileListModel.FileListCount + "個のファイル  うちタイムスタンプ変更可能ファイル" + fileListModel.CanFileListCount + "個";
                 }
                 else
@@ -97,21 +85,21 @@ namespace fname2timestamp
         {
             string[] files = e.Data.GetData(DataFormats.FileDrop) as string[];
 
-            if(fileListModel.DropFileListToDataGridFile(files, GetUpdateFlag()) <= 0)
+            if (fileListModel.DropFileListToDataGridFile(files, GetUpdateFlag()) <= 0)
             {
                 MessageBox.Show("ファイルがありません", "エラー", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
-        private fileListModel.UPDATE_FLAG GetUpdateFlag()
+        private FileListModel.UPDATE_FLAG GetUpdateFlag()
         {
-            fileListModel.UPDATE_FLAG upflag = 0;
+            FileListModel.UPDATE_FLAG upflag = 0;
             if (updateTimeStampChcekBox.IsChecked == true)
             {
-                upflag |= fileListModel.UPDATE_FLAG.UPDATE_DATE;
+                upflag |= FileListModel.UPDATE_FLAG.UPDATE_DATE;
             }
             if (creationTimeStampChcekBox.IsChecked == true)
             {
-                upflag |= fileListModel.UPDATE_FLAG.CREATTION_DATE;
+                upflag |= FileListModel.UPDATE_FLAG.CREATTION_DATE;
             }
             return upflag;
         }
@@ -129,7 +117,7 @@ namespace fname2timestamp
         {
 
             List<DataGridFile> sel_list = dataGrid.SelectedItems.Cast<DataGridFile>().ToList();
-            if(!fileListModel.ChangeTimeStamp(sel_list, GetUpdateFlag()))
+            if (!fileListModel.ChangeTimeStamp(sel_list, GetUpdateFlag()))
             {
                 MessageBox.Show("時刻変換可能なファイルがリストにありません", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
 
@@ -168,7 +156,8 @@ namespace fname2timestamp
         /// <param name="e"></param>
         private void btnAllDel_Click(object sender, RoutedEventArgs e)
         {
-            if(fileListModel.FileListCount > 0) { 
+            if (fileListModel.FileListCount > 0)
+            {
                 fileListModel.RemoveAllDataGridFile();
                 dataGrid.SelectedIndex = -1;
             }
@@ -185,27 +174,28 @@ namespace fname2timestamp
             //Get the newly selected cells
             List<DataGridFile> sel_list = dataGrid.SelectedItems.Cast<DataGridFile>().ToList();
             bool can_exe = false;
-            foreach (var x in sel_list)
+            foreach (DataGridFile x in sel_list)
             {
                 if (x.isValid == true)
                 {
                     can_exe = true;
                 }
             }
-            if (can_exe) {
-                this.btnSelExec.IsEnabled = true;
+            if (can_exe)
+            {
+                btnSelExec.IsEnabled = true;
             }
             else
             {
-                this.btnSelExec.IsEnabled = false;
+                btnSelExec.IsEnabled = false;
             }
             if (sel_list.Count >= 1)
             {
-                this.btnSelDel.IsEnabled = true;
+                btnSelDel.IsEnabled = true;
             }
             else
             {
-                this.btnSelDel.IsEnabled = false;
+                btnSelDel.IsEnabled = false;
             }
         }
         /**
@@ -232,7 +222,7 @@ namespace fname2timestamp
             if (GetUpdateFlag() == 0)
             {
                 updateTimeStampChcekBox.IsChecked = true;
-                MessageBox.Show("両方共外すことは出来ません", "エラー", MessageBoxButton.OK, MessageBoxImage.Information); 
+                MessageBox.Show("両方共外すことは出来ません", "エラー", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
             fileListModel.UpdateList(GetUpdateFlag());
