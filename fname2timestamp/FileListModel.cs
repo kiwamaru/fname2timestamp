@@ -69,7 +69,7 @@ namespace fname2timestamp
         /// </summary>
         /// <param name="files"></param>
         /// <returns></returns>        
-        public List<string> CreateDropFileList(string[] files)
+        private List<string> CreateDropFileList(string[] files)
         {
             List<string> allfiles = new List<string>();
 
@@ -127,10 +127,13 @@ namespace fname2timestamp
         /// </summary>
         /// <param name="fname"></param>
         /// <returns></returns>
-        private List<int> GetDataTimeList(string fname)
+        private DateTime GetDataTime(string fname)
         {
-            Regex dtimePattern_spl = new Regex(@"^(\d+)[\D]+(\d+)[\D]+(\d+)[\D]+(\d+)[\D]+(\d+)(?:[\D]+(\d+)){0,1}", System.Text.RegularExpressions.RegexOptions.Compiled);
-            Regex dtimePattern_seq = new Regex(@"^(\d{4})(\d{2})(\d{2})[\D]{0,1}(\d{0,2})(\d{0,2})(\d{0,2})", System.Text.RegularExpressions.RegexOptions.Compiled);
+            //YYYY-MM-DD-mm-dd-ss
+            Regex dtimePattern_spl = new Regex(@"(\d+)[\D]+(\d+)[\D]+(\d+)[\D]+(\d+)[\D]+(\d+)(?:[\D]+(\d+)){0,1}", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+            //YYYYMMDD-mmddss
+            Regex dtimePattern_seq = new Regex(@"(\d{4})(\d{2})(\d{2})[\D]{0,1}(\d{0,2})(\d{0,2})(\d{0,2})", System.Text.RegularExpressions.RegexOptions.Compiled);
             List<int> dtl = new List<int>();
             Match m_spl = dtimePattern_spl.Match(fname);
             Match m_seq = dtimePattern_seq.Match(fname);
@@ -155,7 +158,11 @@ namespace fname2timestamp
                     }
                 }
             }
-            return dtl;
+            if(dtl.Count() != 6)
+            {
+                throw new System.ArgumentException("ファイル名に日時情報がありません");
+            }
+            return new DateTime(dtl[0], dtl[1], dtl[2], dtl[3], dtl[4], dtl[5]); ;
         }
         /// <summary>
         /// ファイルパスからデータグリッド表示用のクラスに変換する
@@ -186,31 +193,11 @@ namespace fname2timestamp
                     throw new System.UnauthorizedAccessException("ファイルが読み取り専用属性");
                 }
 
-                List<int> dtl = GetDataTimeList(fname);
-                if (dtl.Count == 6)
-                {
-                    if (dtl[0] > 2099 || dtl[0] < 1970)
-                    {
-                        throw new System.ArgumentException("年が異常値 1970-2099まで");
-                    }
-                    dt = new DateTime(dtl[0], dtl[1], dtl[2], dtl[3], dtl[4], dtl[5]);
+                dt = GetDataTime(fname);
 
-                    if (upflag.HasFlag(UPDATE_FLAG.CREATTION_DATE) && upflag.HasFlag(UPDATE_FLAG.UPDATE_DATE))
-                    {
-                        if ((dt == System.IO.File.GetCreationTime(fpath)) && (dt == System.IO.File.GetLastWriteTime(fpath)))
-                        {
-                            throw new System.ArgumentException("既に一致済み");
-                        }
-                        else
-                        {
-                            isValid = true;
-                        }
-                    }
-                    else if (upflag.HasFlag(UPDATE_FLAG.CREATTION_DATE) && (dt == System.IO.File.GetCreationTime(fpath)))
-                    {
-                        throw new System.ArgumentException("既に一致済み");
-                    }
-                    else if (upflag.HasFlag(UPDATE_FLAG.UPDATE_DATE) && (dt == System.IO.File.GetLastWriteTime(fpath)))
+                if (upflag.HasFlag(UPDATE_FLAG.CREATTION_DATE) && upflag.HasFlag(UPDATE_FLAG.UPDATE_DATE))
+                {
+                    if ((dt == System.IO.File.GetCreationTime(fpath)) && (dt == System.IO.File.GetLastWriteTime(fpath)))
                     {
                         throw new System.ArgumentException("既に一致済み");
                     }
@@ -218,11 +205,18 @@ namespace fname2timestamp
                     {
                         isValid = true;
                     }
-
+                }
+                else if (upflag.HasFlag(UPDATE_FLAG.CREATTION_DATE) && (dt == System.IO.File.GetCreationTime(fpath)))
+                {
+                    throw new System.ArgumentException("既に一致済み");
+                }
+                else if (upflag.HasFlag(UPDATE_FLAG.UPDATE_DATE) && (dt == System.IO.File.GetLastWriteTime(fpath)))
+                {
+                    throw new System.ArgumentException("既に一致済み");
                 }
                 else
                 {
-                    throw new System.ArgumentException("ファイル名に日時情報がありません");
+                    isValid = true;
                 }
             }
             catch (Exception exception)
@@ -252,18 +246,10 @@ namespace fname2timestamp
         /// <param name="upflag"></param>
         public void UpdateList(FileListModel.UPDATE_FLAG upflag)
         {
-            /*List<DataGridFile> all_list = dataGrid.Items.Cast<DataGridFile>().ToList();
-            for (int i = 0; i < all_list.Count; i++)
-            {
-                all_list[i].isValid = fileListModel.ConvertToDataGridFile(all_list[i].path, upflag).isValid;
-                all_list[i].err_message = fileListModel.ConvertToDataGridFile(all_list[i].path, upflag).err_message;
-                all_list[i].success = false;
-            }*/
             for (int i = 0; i < dataGridFiles.Count; i++)
             {
                 dataGridFiles[i] = ConvertToDataGridFile(dataGridFiles[i].path, upflag);
             }
-
         }
         /// <summary>
         /// ファイルのタイムスタンプを変更する
