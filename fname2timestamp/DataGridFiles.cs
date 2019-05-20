@@ -8,7 +8,7 @@ namespace DataGridFiles
     {
         public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;//DataGridに値の変更を通知
 
-        protected void NotifyPropertyChanged([CallerMemberName] String propertyName = "")
+        protected void NotifyPropertyChanged([CallerMemberName] string propertyName = "")
         {
             if (PropertyChanged != null)
             {
@@ -21,10 +21,9 @@ namespace DataGridFiles
         private bool _isValid;
         public bool success
         {
-            get{
-                return _success;
-            } 
-            set{
+            get => _success;
+            set
+            {
                 _success = value;
                 NotifyPropertyChanged();
             }
@@ -32,36 +31,37 @@ namespace DataGridFiles
         private string _err_message;
         public bool isValid
         {
-            get{
-                return _isValid;
-            } 
-            set{
+            get => _isValid;
+            set
+            {
                 _isValid = value;
                 NotifyPropertyChanged();
             }
         }
-        private string full_path;
-        private bool fname_validate;
+#pragma warning disable CS0169 // フィールド 'DataGridFile.full_path' は使用されていません。
+        private readonly string full_path;
+#pragma warning restore CS0169 // フィールド 'DataGridFile.full_path' は使用されていません。
+#pragma warning disable CS0169 // フィールド 'DataGridFile.fname_validate' は使用されていません。
+        private readonly bool fname_validate;
+#pragma warning restore CS0169 // フィールド 'DataGridFile.fname_validate' は使用されていません。
         public uint num { get; set; }
-        public string name{get;set;}
-        public string path{get;set;}
+        public string name { get; set; }
+        public string path { get; set; }
         public string ext { get; set; }
         public DateTime update_dtime
         {
-            get{
-                return _update_dtime;
-            } 
-            set{
+            get => _update_dtime;
+            set
+            {
                 _update_dtime = value;
                 NotifyPropertyChanged();
             }
         }
         public DateTime create_dtime
         {
-            get{
-                return _create_dtime;
-            } 
-            set{
+            get => _create_dtime;
+            set
+            {
                 _create_dtime = value;
                 NotifyPropertyChanged();
             }
@@ -71,10 +71,7 @@ namespace DataGridFiles
         public DateTime f2t_dtime { get; set; }
         public string err_message
         {
-            get
-            {
-                return _err_message;
-            }
+            get => _err_message;
             set
             {
                 _err_message = value;
