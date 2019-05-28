@@ -5,7 +5,7 @@
 【 ソフト名 】fname2timestamp
 【 製 作 者 】kiwamaru
 【  種  別  】フリーソフトウェア
-【 動作環境 】windows7,10
+【 動作環境 】windows7,10(.Net Framework4.5)
 【バージョン】1.0.0.2
 【最終更新日】2019/5/28
 【ファイル名】fname2timestamp.exe
@@ -38,7 +38,6 @@ readme.txt
 
 ◇ インストール ◇
 インストーラーを実行してください。
-.Net Framework4.5が必要です。
 
 ◇ アンインストール ◇
 "プログラムと機能"からアンインストールしてください。
