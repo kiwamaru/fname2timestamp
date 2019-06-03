@@ -4,42 +4,51 @@
         xmlns:local="clr-namespace:MyConverter"
         xmlns:prism="http://prismlibrary.com/"
         Title="fname2timestamp" Height="458" Width="1002"
+        prism:ViewModelLocator.AutoWireViewModel="True"
         AllowDrop="True"
-        Drop="Window_Drop" PreviewDragOver="Window_PreviewDragOver" Icon="Resource/Calender.ico">
+        Drop="Window_Drop" PreviewDragOver="Window_PreviewDragOver" Icon="Resource/Calender.ico"
+        Closing="Window_Closing">
     <DockPanel>
         <StackPanel DockPanel.Dock="Top" Height="30" Orientation="Horizontal" FlowDirection="RightToLeft">
-            <Button x:Name="btnAllDel" Width="100" Click="btnAllDel_Click" >
+            <Button x:Name="btnAllDel" Width="100" 
+                    Command="{Binding RemoveAllFileCommand}" IsEnabled="{Binding HasFile}">
             <StackPanel Orientation="Horizontal">
                     <Label Content="全クリア"></Label>
                 <Image Width="24" Height="24" HorizontalAlignment="Left" Source="Resource/Trashbox.ico"/>
                 </StackPanel>
             </Button>
-            <Button x:Name="btnSelDel" Width="100" Click="btnSelDel_Click" IsEnabled="False">
+            <Button x:Name="btnSelDel" Width="100" IsEnabled="{Binding CanDeleteFile}"
+                    Command="{Binding RemoveFileCommand}">
                 <StackPanel Orientation="Horizontal">
                     <Label Content="選択クリア"></Label>
                     <Image Source="Resource/Trashbox.ico" Width="24" Height="24" HorizontalAlignment="Left"></Image>
                 </StackPanel>
             </Button>
 
-            <Button x:Name="btnAllExec" Width="100" Click="btnAllExec_Click">
+            <Button x:Name="btnAllExec" Width="100" 
+                    Command="{Binding ChangeAllTimestampCommand}" IsEnabled="{Binding CanChangeAllTimestamp}">
                 <StackPanel Orientation="Horizontal">
                     <Label Content="全実行"></Label>
                     <Image Source="Resource/cal_all.ico" Width="24" Height="24" HorizontalAlignment="Left"></Image>
                 </StackPanel>
             </Button>
 
-            <Button x:Name="btnSelExec" Width="100" Click="btnSelExec_Click" IsEnabled="False">
+            <Button x:Name="btnSelExec" Width="100" IsEnabled="{Binding CanChangeTimestamp}"
+                    Command="{Binding ChangeTimestampCommand}">
                 <StackPanel Orientation="Horizontal">
                     <Label Content="選択実行" ></Label>
                     <Image Source="Resource/Calender.ico" Width="24" Height="24" HorizontalAlignment="Left"></Image>
                 </StackPanel>
             </Button>
-            <CheckBox x:Name="updateTimeStampChcekBox" Content="更新日時" VerticalAlignment="Center" Margin="30,0,0,0" IsChecked="True" Click="updateChcekBox_Checked"/>
-            <CheckBox x:Name="creationTimeStampChcekBox" Content="作成日時" Margin="30,0,0,0" VerticalAlignment="Center" Padding="0" IsChecked="True" Click="creationDateChcekBox_Checked"/>
+            <CheckBox x:Name="updateTimeStampChcekBox" Content="更新日時" VerticalAlignment="Center" Margin="30,0,0,0" IsChecked="{Binding UpdateDate}" Click="updateChcekBox_Checked"
+                      Command="{Binding UpdateFileCommand}"/>
+            <CheckBox x:Name="creationTimeStampChcekBox" Content="作成日時" Margin="30,0,0,0" VerticalAlignment="Center" Padding="0" IsChecked="{Binding CreationDate}" Click="creationDateChcekBox_Checked"
+                      Command="{Binding UpdateFileCommand}"/>
             <TextBlock VerticalAlignment="Center">:タイムスタンプ変更対象</TextBlock>
         </StackPanel>
-        <TextBlock x:Name="FilesInfoTextBlock" DockPanel.Dock="Bottom" />
-        <DataGrid x:Name="dataGrid" AutoGenerateColumns="False" Margin="0,0,0,0" CanUserAddRows="False" SelectedCellsChanged="DG_SelectedCellsChanged">
+        <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusBarMessage}"/>
+        <DataGrid ItemsSource="{Binding FileList}" x:Name="FileList" 
+                   AutoGenerateColumns="False" Margin="0,0,0,0" CanUserAddRows="False" SelectedCellsChanged="DG_SelectedCellsChanged">
             <DataGrid.Resources>
                 <local:MyBoolConverter x:Key="MyBoolConverter"/>
                 <local:MyDateTimeConverter x:Key="MyDateTimeConverter"/>

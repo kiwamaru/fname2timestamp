@@ -14,7 +14,12 @@ namespace fname2timestamp
     /// </summary>
     public class FileListModel : BindableBase
     {
-        public ObservableCollection<DataGridFile> dataGridFiles { get; set; } = new ObservableCollection<DataGridFile>();//DataGridにbindingしているデータクラス
+        private ObservableCollection<DataGridFile> dataGridFiles;
+        public ObservableCollection<DataGridFile> DataGridFiles
+        {
+            get { return dataGridFiles; }
+            set { this.SetProperty(ref dataGridFiles, value); }
+        }
 
 
         /// <summary>
@@ -54,8 +59,8 @@ namespace fname2timestamp
         public FileListModel()
         {
             //dataGridFiles = new ObservableCollection<DataGridFile>();
-            dataGridFiles.CollectionChanged += DataGridFiles_CollectionChanged;
-
+            DataGridFiles = new ObservableCollection<DataGridFile>();//DataGridにbindingしているデータクラス
+            DataGridFiles.CollectionChanged += DataGridFiles_CollectionChanged;
         }
 
         private void DataGridFiles_CollectionChanged(object sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
@@ -116,10 +121,10 @@ namespace fname2timestamp
             {
                 CurrentProgress = ((fcount++ * 100) / allfiles.Count);
 
-                dataGridFiles.Add(ConvertToDataGridFile(f, upflag));
+                DataGridFiles.Add(ConvertToDataGridFile(f, upflag));
             }
             CurrentProgress = 0;
-            return dataGridFiles.Count;
+            return DataGridFiles.Count;
 
         }
         /// <summary>
@@ -248,7 +253,7 @@ namespace fname2timestamp
         {
             for (int i = 0; i < dataGridFiles.Count; i++)
             {
-                dataGridFiles[i] = ConvertToDataGridFile(dataGridFiles[i].path, upflag);
+                DataGridFiles[i] = ConvertToDataGridFile(DataGridFiles[i].path, upflag);
             }
         }
         /// <summary>
@@ -298,16 +303,9 @@ namespace fname2timestamp
         {
             foreach (DataGridFile o in del_list)
             {
-                dataGridFiles.Remove(o);
+                DataGridFiles.Remove(o);
             }
         }
-        /// <summary>
-        /// リストの全データ削除
-        /// </summary>
-        /// <param name="del_list"></param>
-        public void RemoveAllDataGridFile()
-        {
-            dataGridFiles.Clear();
-        }
+
     }
 }
