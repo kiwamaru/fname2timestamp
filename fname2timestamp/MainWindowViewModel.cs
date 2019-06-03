@@ -15,7 +15,13 @@ namespace fname2timestamp
         private readonly ProgresBarWindow pbw;
 
         public FileListModel fileListModel { get; } = new FileListModel();
-        public IEnumerable<DataGridFile> SelectedItems { get; set; } = Enumerable.Empty<DataGridFile>();
+
+        public ObservableCollection<DataGridFile> listSelectedItem = new ObservableCollection<DataGridFile>();
+        public ObservableCollection<DataGridFile> ListSelectedItem
+        {
+            get { return listSelectedItem; }
+            set { this.SetProperty(ref listSelectedItem, value); }
+        }
 
         private bool creationDate;
         public bool CreationDate
@@ -130,14 +136,14 @@ namespace fname2timestamp
         public void SelChanged()
         {
             this.CanChangeTimestamp = false;
-            foreach (var x in SelectedItems)
+            foreach (var x in ListSelectedItem)
             {
                 if (x.isValid == true)
                 {
                     this.CanChangeTimestamp = true;
                 }
             }
-            if (SelectedItems.Count() >= 1)
+            if (ListSelectedItem.Count() >= 1)
             {
                 this.CanDeleteFile = true;
             }
@@ -167,7 +173,7 @@ namespace fname2timestamp
 
         public bool AddFiles(string [] files)
         {
-            SelectedItems = Enumerable.Empty<DataGridFile>();
+            ListSelectedItem.Clear();
             if (fileListModel.DropFileListToDataGridFile(files, GetUpdateFlag()) <= 0)
             {
                 return false;
@@ -180,7 +186,7 @@ namespace fname2timestamp
             {
                 //MessageBox.Show("時刻変換可能なファイルがリストにありません", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            SelectedItems = Enumerable.Empty<DataGridFile>();
+            ListSelectedItem.Clear();
         }
         public void RemoveAllFile()
         {
@@ -188,16 +194,16 @@ namespace fname2timestamp
         }
         public void OnChangeTimestamp()
         {
-            if (!fileListModel.ChangeTimeStamp(SelectedItems.ToList(), GetUpdateFlag()))
+            if (!fileListModel.ChangeTimeStamp(ListSelectedItem.ToList(), GetUpdateFlag()))
             {
                 //MessageBox.Show("時刻変換可能なファイルがリストにありません", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            SelectedItems = Enumerable.Empty<DataGridFile>();
+            ListSelectedItem.Clear();
         }
         public void RemoveFile()
         {
-            fileListModel.RemoveDataGridFile(SelectedItems.ToList());
-            SelectedItems = Enumerable.Empty<DataGridFile>();
+            fileListModel.RemoveDataGridFile(ListSelectedItem.ToList());
+            ListSelectedItem.Clear();
         }
         public void UpdateFile()
         {
