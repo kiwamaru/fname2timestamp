@@ -1,8 +1,9 @@
 ﻿<Window x:Class="fname2timestamp.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:local="clr-namespace:MyConverter"
+        xmlns:local="clr-namespace:fname2timestamp"
         xmlns:prism="http://prismlibrary.com/"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         Title="fname2timestamp" Height="458" Width="1002"
         prism:ViewModelLocator.AutoWireViewModel="True"
         AllowDrop="True"
@@ -10,17 +11,17 @@
         Closing="Window_Closing">
     <DockPanel>
         <StackPanel DockPanel.Dock="Top" Height="30" Orientation="Horizontal" FlowDirection="RightToLeft">
-            <Button x:Name="btnAllDel" Width="100" 
+            <Button x:Name="btnAllDel" Width="120" 
                     Command="{Binding RemoveAllFileCommand}" IsEnabled="{Binding HasFile}">
             <StackPanel Orientation="Horizontal">
-                    <Label Content="全クリア"></Label>
+                    <Label Content="全リスト削除"></Label>
                 <Image Width="24" Height="24" HorizontalAlignment="Left" Source="Resource/Trashbox.ico"/>
                 </StackPanel>
             </Button>
-            <Button x:Name="btnSelDel" Width="100" IsEnabled="{Binding CanDeleteFile}"
+            <Button x:Name="btnSelDel" Width="150" IsEnabled="{Binding CanDeleteFile}"
                     Command="{Binding RemoveFileCommand}">
                 <StackPanel Orientation="Horizontal">
-                    <Label Content="選択クリア"></Label>
+                    <Label Content="リストから選択削除"></Label>
                     <Image Source="Resource/Trashbox.ico" Width="24" Height="24" HorizontalAlignment="Left"></Image>
                 </StackPanel>
             </Button>
@@ -47,7 +48,7 @@
             <TextBlock VerticalAlignment="Center">:タイムスタンプ変更対象</TextBlock>
         </StackPanel>
         <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusBarMessage}"/>
-        <DataGrid ItemsSource="{Binding FileList}" x:Name="FileList" 
+        <DataGrid ItemsSource="{Binding FileList}"
                    AutoGenerateColumns="False" Margin="0,0,0,0" CanUserAddRows="False" SelectedCellsChanged="DG_SelectedCellsChanged">
             <DataGrid.Resources>
                 <local:MyBoolConverter x:Key="MyBoolConverter"/>
@@ -76,9 +77,12 @@
                 <DataGridTextColumn Header="変更実行後" Binding="{Binding f2t_dtime, Converter={StaticResource MyDateTimeConverter}, StringFormat=yyyy/MM/dd-HH:mm:ss}" IsReadOnly="True"/>
                 <!--<DataGridTextColumn Header="変換可否" Binding="{Binding isValid, Converter={StaticResource MyBoolConverter}}"/>-->
                 <!--<DataGridTextColumn Header="現在のアクセス日時" Binding="{Binding access_dtime, StringFormat=yyyy/MM/dd-HH:mm:ss}"/>-->
-            <DataGridTextColumn Header="ファイルサイズ" Binding="{Binding size, StringFormat=\{0:N0\} bytes}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="ファイルサイズ" Binding="{Binding size, StringFormat=\{0:N0\} bytes}" IsReadOnly="True"/>
                 <DataGridTextColumn Header="備考" Binding="{Binding err_message}" IsReadOnly="True"/>
             </DataGrid.Columns>
+            <i:Interaction.Behaviors>
+                <local:BindSelectedItemsBehavior SelectedItems="{Binding ListSelectedItem}"/>
+            </i:Interaction.Behaviors>
     </DataGrid>
     </DockPanel>
 </Window>

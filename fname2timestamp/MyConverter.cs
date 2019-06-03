@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Data;
 
-namespace MyConverter
+namespace fname2timestamp
 {
     public class MyBoolConverter : IValueConverter
     {

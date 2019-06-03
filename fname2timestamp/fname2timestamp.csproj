@@ -80,6 +80,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="BindSelectedItemsBehavior.cs" />
     <Compile Include="FileListModel.cs" />
     <Compile Include="MainWindowViewModel.cs" />
     <Compile Include="ProgressBar.xaml.cs">

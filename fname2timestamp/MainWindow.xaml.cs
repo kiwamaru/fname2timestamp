@@ -45,7 +45,6 @@ namespace fname2timestamp
         private void DG_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
         {
             //Get the newly selected cells
-            this.ViewModel.SelectedItems = this.FileList.SelectedItems.Cast<DataGridFile>();
             this.ViewModel.SelChanged();
         }
         /**
