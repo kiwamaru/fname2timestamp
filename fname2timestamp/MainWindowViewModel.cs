@@ -6,6 +6,7 @@ using System.Linq;
 using System.ComponentModel;
 using DataGridFiles;
 using System.Collections.ObjectModel;
+using Prism.Interactivity.InteractionRequest;
 
 namespace fname2timestamp
 {
@@ -15,6 +16,13 @@ namespace fname2timestamp
         private readonly ProgresBarWindow pbw;
 
         public FileListModel fileListModel { get; } = new FileListModel();
+
+        private IEnumerable<string> draggedFiles;
+        public IEnumerable<string> DraggedFiles
+        {
+            get { return draggedFiles; }
+            set { this.SetProperty(ref draggedFiles, value); }
+        }
 
         private ObservableCollection<DataGridFile> listSelectedItem = new ObservableCollection<DataGridFile>();
         public ObservableCollection<DataGridFile> ListSelectedItem
@@ -83,6 +91,10 @@ namespace fname2timestamp
         public DelegateCommand RemoveAllFileCommand { get; private set; }
         public DelegateCommand UpdateFileCommand { get; private set; }
         public DelegateCommand SelectedCellsChangedCommand { get; private set; }
+
+        /// <summary>情報MessageBoxを表示します。</summary>
+        public InteractionRequest<INotification> MessageBoxRequest { get; private set; }
+
         private ObservableCollection<DataGridFile> fileList;
         public ObservableCollection<DataGridFile> FileList
         {
@@ -96,6 +108,9 @@ namespace fname2timestamp
 
             fileListModel.PropertyChanged += FileListModel_PropertyChanged;
             FileList = fileListModel.DataGridFiles;
+            this.PropertyChanged += MainWindowViewModel_PropertyChanged;
+            this.MessageBoxRequest = new InteractionRequest<INotification>();
+
             ChangeTimestampCommand = new DelegateCommand(
                 () =>
                 {
@@ -135,11 +150,24 @@ namespace fname2timestamp
             this.HasFile = false;
 
         }
+
         public void OnClosing()
         {
             pbw.Close();
         }
+        /// <summary>情報メッセージボックスを表示します。</summary>
+        /// <param name="message">メッセージボックスに表示する内容を表す文字列。</param>
+        /// <param name="title">メッセージボックスのタイトルを表す文字列。</param>
+        private void showInformationMessage(string message, string title = "情報")
+        {
+            var notify = new Notification()
+            {
+                Content = message,
+                Title = title
+            };
 
+            this.MessageBoxRequest.Raise(notify);
+        }
         /// <summary>
         /// DataGrid選択変更イベント
         /// </summary>
@@ -175,27 +203,21 @@ namespace fname2timestamp
             return u;
         }
 
-        public bool AddFiles(string [] files)
+        public void AddFiles(IEnumerable<string> files)
         {
             ListSelectedItem.Clear();
             if (fileListModel.DropFileListToDataGridFile(files, GetUpdateFlag()) <= 0)
             {
-                return false;
+                this.showInformationMessage("ファイルがありません", "エラー");
             }
-            return true;
         }
         public void OnChangeAllTimestamp()
         {
             ListSelectedItem.Clear();
             if (!fileListModel.ChangeTimeStamp(fileListModel.DataGridFiles.ToList(), GetUpdateFlag()))
             {
-                //MessageBox.Show("時刻変換可能なファイルがリストにありません", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                this.showInformationMessage("時刻変換可能なファイルがリストにありません", "エラー");
             }
-        }
-        public void RemoveAllFile()
-        {
-            ListSelectedItem.Clear();
-            fileListModel.RemoveDataGridFile(fileListModel.DataGridFiles.ToList());
         }
         public void OnChangeTimestamp()
         {
@@ -203,8 +225,13 @@ namespace fname2timestamp
             ListSelectedItem.Clear();
             if (!fileListModel.ChangeTimeStamp(l.ToList(), GetUpdateFlag()))
             {
-                //MessageBox.Show("時刻変換可能なファイルがリストにありません", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
+                this.showInformationMessage("時刻変換可能なファイルがリストにありません", "エラー");
             }
+        }
+        public void RemoveAllFile()
+        {
+            ListSelectedItem.Clear();
+            fileListModel.RemoveDataGridFile(fileListModel.DataGridFiles.ToList());
         }
         public void RemoveFile()
         {
@@ -216,6 +243,34 @@ namespace fname2timestamp
         {
             fileListModel.UpdateList(GetUpdateFlag());
         }
+
+        private void MainWindowViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if(e.PropertyName == "CreationDate")
+            {
+                if (CreationDate == false && UpdateDate == false)
+                {
+                    CreationDate = true;
+                    this.showInformationMessage("両方共外すことは出来ません", "エラー");
+                }
+
+            }
+            if (e.PropertyName == "UpdateDate")
+            {
+                if (CreationDate == false && UpdateDate == false)
+                {
+                    UpdateDate = true;
+                    this.showInformationMessage("両方共外すことは出来ません", "エラー");
+                }
+
+            }
+            if(e.PropertyName == "DraggedFiles")
+            {
+                AddFiles(DraggedFiles);
+            }
+        }
+
+
         /// <summary>
         /// FileListModelのプロパティチェンジイベントハンドラ
         /// </summary>
