@@ -13,17 +13,13 @@ namespace fname2timestamp
     public partial class MainWindow : Window
     {
 
-        public MainWindowViewModel ViewModel => this.DataContext as MainWindowViewModel;
+        //public MainWindowViewModel ViewModel => this.DataContext as MainWindowViewModel;
 
         public MainWindow()
         {
             InitializeComponent();
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
-        {
-            this.ViewModel.OnClosing();
-        }
     }
 
 }

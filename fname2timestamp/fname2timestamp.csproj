@@ -101,6 +101,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Behaviors\ViewModelCleanupBehavior.cs" />
     <Compile Include="Behaviors\FileDragAndDropBehavior.cs" />
     <Compile Include="Behaviors\BindSelectedItemsBehavior.cs" />
     <Compile Include="FileListModel.cs" />

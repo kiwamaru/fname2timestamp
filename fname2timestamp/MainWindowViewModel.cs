@@ -10,7 +10,7 @@ using Prism.Interactivity.InteractionRequest;
 
 namespace fname2timestamp
 {
-    public class MainWindowViewModel : BindableBase
+    public class MainWindowViewModel : BindableBase, IDisposable
     {
         //private uint index;
         private readonly ProgresBarWindow pbw;
@@ -150,8 +150,7 @@ namespace fname2timestamp
             this.HasFile = false;
 
         }
-
-        public void OnClosing()
+        public void Dispose()
         {
             pbw.Close();
         }
@@ -319,7 +318,6 @@ namespace fname2timestamp
             }
 
         }
-
 
     }
 }

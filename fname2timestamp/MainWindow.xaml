@@ -10,7 +10,7 @@
         prism:ViewModelLocator.AutoWireViewModel="True"
         AllowDrop="True"
         Icon="Resource/Calender.ico"
-        Closing="Window_Closing">
+        >
     <DockPanel>
         <StackPanel DockPanel.Dock="Top" Height="30" Orientation="Horizontal" FlowDirection="RightToLeft">
             <Button x:Name="btnAllDel" Width="120" 
@@ -92,9 +92,11 @@
             </i:Interaction.Triggers>
         </DataGrid>
     </DockPanel>
-    <!-- File Drop -->
     <i:Interaction.Behaviors>
+        <!-- File Drop -->
         <behaviors:FileDragAndDropBehavior DraggedFiles="{Binding DraggedFiles,Mode=OneWayToSource}"/>
+        <!-- OnClose -->
+        <behaviors:ViewModelCleanupBehavior/>
     </i:Interaction.Behaviors>
     <!-- MessageBox -->
     <i:Interaction.Triggers>
