@@ -75,7 +75,7 @@ namespace fname2timestamp
         }
 
         /// <summary>
-        /// タイムスタンプ変更実行コマンド
+        /// コマンド
         /// </summary>
         public DelegateCommand ChangeTimestampCommand { get; private set; }
         public DelegateCommand RemoveFileCommand { get; private set; }
@@ -83,8 +83,6 @@ namespace fname2timestamp
         public DelegateCommand RemoveAllFileCommand { get; private set; }
         public DelegateCommand UpdateFileCommand { get; private set; }
         public DelegateCommand SelectedCellsChangedCommand { get; private set; }
-
-
         private ObservableCollection<DataGridFile> fileList;
         public ObservableCollection<DataGridFile> FileList
         {
@@ -121,13 +119,13 @@ namespace fname2timestamp
             UpdateFileCommand = new DelegateCommand(
                 () =>
                 {
-                    UpdateFile();
+                    ChangeTimestampType();
                 }, () => true);
-            SelectedCellsChangedCommand = new DelegateCommand(() => 
-            {
-                SelChanged();
-            }, () => true);
-
+            SelectedCellsChangedCommand = new DelegateCommand(
+                () =>
+                {
+                    SelChanged();
+                }, () => true);
             this.CanChangeTimestamp = false;
             this.CanChangeAllTimestamp = false;
             this.CanDeleteFile = false;
@@ -137,11 +135,23 @@ namespace fname2timestamp
             this.HasFile = false;
 
         }
+        public void OnClosing()
+        {
+            pbw.Close();
+        }
 
-
+        /// <summary>
+        /// DataGrid選択変更イベント
+        /// </summary>
         public void SelChanged()
         {
-            this.CanChangeTimestamp = false;
+            if (ListSelectedItem.Count() == 0)
+            {
+                this.CanDeleteFile = false;
+                this.CanChangeTimestamp = false;
+                return;
+            }
+            this.CanDeleteFile = true;
             foreach (var x in ListSelectedItem)
             {
                 if (x.isValid == true)
@@ -149,19 +159,7 @@ namespace fname2timestamp
                     this.CanChangeTimestamp = true;
                 }
             }
-            if (ListSelectedItem.Count() >= 1)
-            {
-                this.CanDeleteFile = true;
-            }
-            else
-            {
-                this.CanDeleteFile = false;
-            }
 
-        }
-        public void OnClosing()
-        {
-            pbw.Close();
         }
         private FileListModel.UPDATE_FLAG GetUpdateFlag()
         {
@@ -188,30 +186,33 @@ namespace fname2timestamp
         }
         public void OnChangeAllTimestamp()
         {
+            ListSelectedItem.Clear();
             if (!fileListModel.ChangeTimeStamp(fileListModel.DataGridFiles.ToList(), GetUpdateFlag()))
             {
                 //MessageBox.Show("時刻変換可能なファイルがリストにありません", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            ListSelectedItem.Clear();
         }
         public void RemoveAllFile()
         {
+            ListSelectedItem.Clear();
             fileListModel.RemoveDataGridFile(fileListModel.DataGridFiles.ToList());
         }
         public void OnChangeTimestamp()
         {
-            if (!fileListModel.ChangeTimeStamp(ListSelectedItem.ToList(), GetUpdateFlag()))
+            var l = new ObservableCollection<DataGridFile>(ListSelectedItem);
+            ListSelectedItem.Clear();
+            if (!fileListModel.ChangeTimeStamp(l.ToList(), GetUpdateFlag()))
             {
                 //MessageBox.Show("時刻変換可能なファイルがリストにありません", "エラー", MessageBoxButton.OK, MessageBoxImage.Error);
             }
-            ListSelectedItem.Clear();
         }
         public void RemoveFile()
         {
-            fileListModel.RemoveDataGridFile(ListSelectedItem.ToList());
+            var l = new ObservableCollection < DataGridFile > (ListSelectedItem);
             ListSelectedItem.Clear();
+            fileListModel.RemoveDataGridFile(l.ToList());
         }
-        public void UpdateFile()
+        public void ChangeTimestampType()
         {
             fileListModel.UpdateList(GetUpdateFlag());
         }
