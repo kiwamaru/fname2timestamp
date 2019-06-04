@@ -83,13 +83,13 @@
                 <DataGridTextColumn Header="備考" Binding="{Binding err_message}" IsReadOnly="True"/>
             </DataGrid.Columns>
             <i:Interaction.Behaviors>
-                <behaviors:DataGridSelectedItemsBlendBehavior SelectedItems="{Binding ListSelectedItem}"/>
+                <behaviors:BindSelectedItemsBehavior SelectedItems="{Binding ListSelectedItem}"/>
             </i:Interaction.Behaviors>
             <i:Interaction.Triggers>
                 <i:EventTrigger EventName="SelectedCellsChanged">
                     <i:InvokeCommandAction Command="{Binding SelectedCellsChangedCommand}"/>
                 </i:EventTrigger>
             </i:Interaction.Triggers>
-    </DataGrid>
+        </DataGrid>
     </DockPanel>
 </Window>
