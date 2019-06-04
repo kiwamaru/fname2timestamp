@@ -74,7 +74,7 @@ namespace fname2timestamp
         /// </summary>
         /// <param name="files"></param>
         /// <returns></returns>        
-        private List<string> CreateDropFileList(string[] files)
+        private List<string> CreateDropFileList(IEnumerable<string> files)
         {
             List<string> allfiles = new List<string>();
 
@@ -110,7 +110,7 @@ namespace fname2timestamp
         /// </summary>
         /// <param name="files"></param>
         /// <param name="upflag"></param>
-        public int DropFileListToDataGridFile(string[] files, UPDATE_FLAG upflag)
+        public int DropFileListToDataGridFile(IEnumerable<string> files, UPDATE_FLAG upflag)
         {
             int fcount = 0;
             CurrentProgress = 0;
