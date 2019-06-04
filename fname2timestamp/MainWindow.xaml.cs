@@ -40,14 +40,6 @@ namespace fname2timestamp
             e.Handled = e.Data.GetDataPresent(DataFormats.FileDrop);
         }
         /**
-         * 選択ボタンの有効・無効を切り替える
-         */
-        private void DG_SelectedCellsChanged(object sender, SelectedCellsChangedEventArgs e)
-        {
-            //Get the newly selected cells
-            this.ViewModel.SelChanged();
-        }
-        /**
          * 作成日時変更チェックボックスのクリックイベント
          */
         private void creationDateChcekBox_Checked(object sender, RoutedEventArgs e)

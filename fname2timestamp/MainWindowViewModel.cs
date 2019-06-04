@@ -16,7 +16,7 @@ namespace fname2timestamp
 
         public FileListModel fileListModel { get; } = new FileListModel();
 
-        public ObservableCollection<DataGridFile> listSelectedItem = new ObservableCollection<DataGridFile>();
+        private ObservableCollection<DataGridFile> listSelectedItem = new ObservableCollection<DataGridFile>();
         public ObservableCollection<DataGridFile> ListSelectedItem
         {
             get { return listSelectedItem; }
@@ -82,6 +82,7 @@ namespace fname2timestamp
         public DelegateCommand ChangeAllTimestampCommand { get; private set; }
         public DelegateCommand RemoveAllFileCommand { get; private set; }
         public DelegateCommand UpdateFileCommand { get; private set; }
+        public DelegateCommand SelectedCellsChangedCommand { get; private set; }
 
 
         private ObservableCollection<DataGridFile> fileList;
@@ -122,6 +123,11 @@ namespace fname2timestamp
                 {
                     UpdateFile();
                 }, () => true);
+            SelectedCellsChangedCommand = new DelegateCommand(() => 
+            {
+                SelChanged();
+            }, () => true);
+
             this.CanChangeTimestamp = false;
             this.CanChangeAllTimestamp = false;
             this.CanDeleteFile = false;
