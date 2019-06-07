@@ -11,6 +11,9 @@
         AllowDrop="True"
         Icon="Resource/Calender.ico"
         >
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolVisibilityConverter"/>
+    </Window.Resources>
     <DockPanel>
         <StackPanel DockPanel.Dock="Top" Height="30" Orientation="Horizontal" FlowDirection="RightToLeft">
             <Button x:Name="btnAllDel" Width="120" 
@@ -72,14 +75,14 @@
         <DataGrid.Columns>
             <!--<DataGridTextColumn Header="No" Binding="{Binding num}"/>-->
             <DataGridTextColumn Header="ファイル名" Binding="{Binding name}" Width="200" MinWidth="100" IsReadOnly="True"/>
-                <DataGridTextColumn Header="ファイルの種類" Binding="{Binding ext}" Width="100" MinWidth="20" IsReadOnly="True"/>
-                <DataGridTextColumn Header="フルパス" Binding="{Binding path}" Width="60" IsReadOnly="True"/>
-                <DataGridTextColumn Header="現在の作成日時" Binding="{Binding create_dtime, StringFormat=yyyy/MM/dd-HH:mm:ss}" IsReadOnly="True"/>
-                <DataGridTextColumn Header="現在の更新日時" Binding="{Binding update_dtime, StringFormat=yyyy/MM/dd-HH:mm:ss}" IsReadOnly="True"/>
+                <!--<DataGridTextColumn Header="ファイルの種類" Binding="{Binding ext}" Width="100" MinWidth="20" IsReadOnly="True"/>-->
+                <!--<DataGridTextColumn Header="フルパス" Binding="{Binding path}" Width="60" IsReadOnly="True"/>-->
+                <DataGridTextColumn Header="現在の更新日時" Binding="{Binding update_dtime, StringFormat=yyyy/MM/dd-HH:mm:ss}" IsReadOnly="True" Visibility="{Binding Source={x:Reference updateTimeStampChcekBox},Path=IsChecked,Converter={StaticResource BoolVisibilityConverter}}"/>
+                <DataGridTextColumn Header="現在の作成日時" Binding="{Binding create_dtime, StringFormat=yyyy/MM/dd-HH:mm:ss}" IsReadOnly="True" Visibility="{Binding Source={x:Reference creationTimeStampChcekBox},Path=IsChecked,Converter={StaticResource BoolVisibilityConverter}}"/>
                 <DataGridTextColumn Header="変更実行後" Binding="{Binding f2t_dtime, Converter={StaticResource MyDateTimeConverter}, StringFormat=yyyy/MM/dd-HH:mm:ss}" IsReadOnly="True"/>
                 <!--<DataGridTextColumn Header="変換可否" Binding="{Binding isValid, Converter={StaticResource MyBoolConverter}}"/>-->
                 <!--<DataGridTextColumn Header="現在のアクセス日時" Binding="{Binding access_dtime, StringFormat=yyyy/MM/dd-HH:mm:ss}"/>-->
-                <DataGridTextColumn Header="ファイルサイズ" Binding="{Binding size, StringFormat=\{0:N0\} bytes}" IsReadOnly="True"/>
+                <!--<DataGridTextColumn Header="ファイルサイズ" Binding="{Binding size, StringFormat=\{0:N0\} bytes}" IsReadOnly="True"/>-->
                 <DataGridTextColumn Header="備考" Binding="{Binding err_message}" IsReadOnly="True"/>
             </DataGrid.Columns>
             <i:Interaction.Behaviors>
