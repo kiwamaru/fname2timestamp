@@ -17,6 +17,9 @@ namespace fname2timestamp
 
         public FileListModel fileListModel { get; } = new FileListModel();
 
+        /// <summary>
+        /// ドロップしたファイルのファイルリスト
+        /// </summary>
         private IEnumerable<string> draggedFiles;
         public IEnumerable<string> DraggedFiles
         {
@@ -24,19 +27,27 @@ namespace fname2timestamp
             set { this.SetProperty(ref draggedFiles, value); }
         }
 
+        /// <summary>
+        /// DataGridで選択中のファイルリスト
+        /// </summary>
         private ObservableCollection<DataGridFile> listSelectedItem = new ObservableCollection<DataGridFile>();
         public ObservableCollection<DataGridFile> ListSelectedItem
         {
             get { return listSelectedItem; }
             set { this.SetProperty(ref listSelectedItem, value); }
         }
-
+        /// <summary>
+        /// 作成日を変更するかどうか
+        /// </summary>
         private bool creationDate;
         public bool CreationDate
         {
             get { return creationDate; }
             set { this.SetProperty(ref creationDate, value); }
         }
+        /// <summary>
+        /// 更新日を変更するかどうか
+        /// </summary>
         private bool updateDate;
         public bool UpdateDate
         {
@@ -44,37 +55,46 @@ namespace fname2timestamp
             set { this.SetProperty(ref updateDate, value); }
         }
 
-        private FileListModel.UPDATE_FLAG upflag;
-        public FileListModel.UPDATE_FLAG Upflag
-        {
-            get { return upflag; }
-            set { this.SetProperty(ref upflag, value); }
-        }
+        /// <summary>
+        /// Vのステータスバーのテキストメッセージ
+        /// </summary>
         private String statusBarMessage;
         public String StatusBarMessage
         {
             get { return statusBarMessage; }
             set { this.SetProperty(ref statusBarMessage, value); }
         }
-        
+
+        /// <summary>
+        /// 1つでもファイルリストがあるかどうかを保持 V側でバインド
+        /// </summary>
         private bool hasFile;
         public bool HasFile
         {
             get { return hasFile; }
             set { this.SetProperty(ref hasFile, value); }
         }
+        /// <summary>
+        /// 選択したファイルがタイムスタンプ変更可能かどうかを保持 V側でバインド
+        /// </summary>
         private bool canChangeTimestamp;
         public bool CanChangeTimestamp
         {
             get { return canChangeTimestamp; }
             set { this.SetProperty(ref canChangeTimestamp, value); }
         }
+        /// <summary>
+        /// タイムスタンプ変更可能なファイルが１つでもあるかどうかを保持 V側でバインド
+        /// </summary>
         private bool canChangeAllTimestamp;
         public bool CanChangeAllTimestamp
         {
             get { return canChangeAllTimestamp; }
             set { this.SetProperty(ref canChangeAllTimestamp, value); }
         }
+        /// <summary>
+        /// リストから削除可能なファイルが１つでもあるかどうかを保持 V側でバインド
+        /// </summary>
         private bool canDeleteFile;
         public bool CanDeleteFile
         {

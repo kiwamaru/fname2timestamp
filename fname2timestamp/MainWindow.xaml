@@ -21,7 +21,7 @@
                 <ColumnDefinition/>
             </Grid.ColumnDefinitions>
             <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" Grid.Column="0">
-                <Button Content="Button" Width="75" HorizontalAlignment="Left" Margin="10,0,0,0"/>
+                <Button Content="モード変更" Width="75" HorizontalAlignment="Left" Margin="10,0,0,0"/>
                 <TextBlock VerticalAlignment="Center" Margin="50,0,0,0">タイムスタンプ変更対象:</TextBlock>
                 <CheckBox x:Name="updateTimeStampChcekBox" Content="更新日時" VerticalAlignment="Center" Margin="0" IsChecked="{Binding UpdateDate}"
                       Command="{Binding UpdateFileCommand}"/>
