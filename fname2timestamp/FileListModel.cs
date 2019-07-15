@@ -135,7 +135,7 @@ namespace fname2timestamp
         private DateTime GetDataTime(string fname)
         {
             //YYYY-MM-DD-mm-dd-ss
-            Regex dtimePattern_spl = new Regex(@"(\d+)[\D]+(\d+)[\D]+(\d+)[\D]+(\d+)[\D]+(\d+)(?:[\D]+(\d+)){0,1}", System.Text.RegularExpressions.RegexOptions.Compiled);
+            Regex dtimePattern_spl = new Regex(@"(\d{4})[\D]+(\d{2})[\D]+(\d{2})[\D]+(\d{2})[\D]+(\d{2})(?:[\D]+(\d+)){0,1}", System.Text.RegularExpressions.RegexOptions.Compiled);
 
             //YYYYMMDD-mmddss
             Regex dtimePattern_seq = new Regex(@"(\d{4})(\d{2})(\d{2})[\D]{0,1}(\d{0,2})(\d{0,2})(\d{0,2})", System.Text.RegularExpressions.RegexOptions.Compiled);
