@@ -15,43 +15,50 @@
         <BooleanToVisibilityConverter x:Key="BoolVisibilityConverter"/>
     </Window.Resources>
     <DockPanel>
-        <StackPanel DockPanel.Dock="Top" Height="30" Orientation="Horizontal" FlowDirection="RightToLeft">
-            <Button x:Name="btnAllDel" Width="120" 
-                    Command="{Binding RemoveAllFileCommand}" IsEnabled="{Binding HasFile}">
-            <StackPanel Orientation="Horizontal">
-                    <Label Content="全リスト削除"></Label>
-                <Image Width="24" Height="24" HorizontalAlignment="Left" Source="Resource/Trashbox.ico"/>
-                </StackPanel>
-            </Button>
-            <Button x:Name="btnSelDel" Width="150" IsEnabled="{Binding CanDeleteFile}"
-                    Command="{Binding RemoveFileCommand}">
-                <StackPanel Orientation="Horizontal">
-                    <Label Content="リストから選択削除"></Label>
-                    <Image Source="Resource/Trashbox.ico" Width="24" Height="24" HorizontalAlignment="Left"></Image>
-                </StackPanel>
-            </Button>
+        <Grid DockPanel.Dock="Top" >
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition/>
+                <ColumnDefinition/>
+            </Grid.ColumnDefinitions>
+            <StackPanel HorizontalAlignment="Left" Orientation="Horizontal" Grid.Column="0">
+                <TextBlock VerticalAlignment="Center" Margin="50,0,0,0">タイムスタンプ変更対象:</TextBlock>
+                <CheckBox x:Name="updateTimeStampChcekBox" Content="更新日時" VerticalAlignment="Center" Margin="0" IsChecked="{Binding UpdateDate}"
+                      Command="{Binding UpdateFileCommand}"/>
+                <CheckBox x:Name="creationTimeStampChcekBox" Content="作成日時" Margin="20,0,0,0" VerticalAlignment="Center" Padding="0" IsChecked="{Binding CreationDate}"
+                      Command="{Binding UpdateFileCommand}"/>
+            </StackPanel>
 
-            <Button x:Name="btnAllExec" Width="100" 
-                    Command="{Binding ChangeAllTimestampCommand}" IsEnabled="{Binding CanChangeAllTimestamp}">
-                <StackPanel Orientation="Horizontal">
-                    <Label Content="全実行"></Label>
-                    <Image Source="Resource/cal_all.ico" Width="24" Height="24" HorizontalAlignment="Left"></Image>
-                </StackPanel>
-            </Button>
-
-            <Button x:Name="btnSelExec" Width="100" IsEnabled="{Binding CanChangeTimestamp}"
+            <StackPanel Margin="0" VerticalAlignment="Center" Orientation="Horizontal" HorizontalAlignment="Right" Grid.Column="1">
+                <Button x:Name="btnSelExec" Width="100" IsEnabled="{Binding CanChangeTimestamp}"
                     Command="{Binding ChangeTimestampCommand}">
-                <StackPanel Orientation="Horizontal">
-                    <Label Content="選択実行" ></Label>
-                    <Image Source="Resource/Calender.ico" Width="24" Height="24" HorizontalAlignment="Left"></Image>
-                </StackPanel>
-            </Button>
-            <CheckBox x:Name="updateTimeStampChcekBox" Content="更新日時" VerticalAlignment="Center" Margin="30,0,0,0" IsChecked="{Binding UpdateDate}"
-                      Command="{Binding UpdateFileCommand}"/>
-            <CheckBox x:Name="creationTimeStampChcekBox" Content="作成日時" Margin="30,0,0,0" VerticalAlignment="Center" Padding="0" IsChecked="{Binding CreationDate}"
-                      Command="{Binding UpdateFileCommand}"/>
-            <TextBlock VerticalAlignment="Center">:タイムスタンプ変更対象</TextBlock>
-        </StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="選択実行" ></Label>
+                        <Image Source="Resource/Calender.ico" Width="24" Height="24" HorizontalAlignment="Left"></Image>
+                    </StackPanel>
+                </Button>
+                <Button x:Name="btnAllExec" Width="100" 
+                    Command="{Binding ChangeAllTimestampCommand}" IsEnabled="{Binding CanChangeAllTimestamp}">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="全実行"></Label>
+                        <Image Source="Resource/cal_all.ico" Width="24" Height="24" HorizontalAlignment="Left"></Image>
+                    </StackPanel>
+                </Button>
+                <Button x:Name="btnSelDel" Width="150" IsEnabled="{Binding CanDeleteFile}"
+                    Command="{Binding RemoveFileCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="リストから選択削除"></Label>
+                        <Image Source="Resource/Trashbox.ico" Width="24" Height="24" HorizontalAlignment="Left"></Image>
+                    </StackPanel>
+                </Button>
+                <Button x:Name="btnAllDel" Width="120" 
+                    Command="{Binding RemoveAllFileCommand}" IsEnabled="{Binding HasFile}" HorizontalAlignment="Left">
+                    <StackPanel Orientation="Horizontal">
+                        <Label Content="全リスト削除"></Label>
+                        <Image Width="24" Height="24" HorizontalAlignment="Left" Source="Resource/Trashbox.ico"/>
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </Grid>
         <TextBlock DockPanel.Dock="Bottom" Text="{Binding StatusBarMessage}"/>
         <DataGrid ItemsSource="{Binding FileList}"
                    AutoGenerateColumns="False" Margin="0,0,0,0" CanUserAddRows="False">
@@ -69,12 +76,12 @@
                             <Setter Property="Background" Value="LightGreen" />
                         </DataTrigger>
                     </Style.Triggers>
-                    
+
                 </Style>
             </DataGrid.ItemContainerStyle>
-        <DataGrid.Columns>
-            <!--<DataGridTextColumn Header="No" Binding="{Binding num}"/>-->
-            <DataGridTextColumn Header="ファイル名" Binding="{Binding name}" Width="200" MinWidth="100" IsReadOnly="True"/>
+            <DataGrid.Columns>
+                <!--<DataGridTextColumn Header="No" Binding="{Binding num}"/>-->
+                <DataGridTextColumn Header="ファイル名" Binding="{Binding name}" Width="200" MinWidth="100" IsReadOnly="True"/>
                 <!--<DataGridTextColumn Header="ファイルの種類" Binding="{Binding ext}" Width="100" MinWidth="20" IsReadOnly="True"/>-->
                 <!--<DataGridTextColumn Header="フルパス" Binding="{Binding path}" Width="60" IsReadOnly="True"/>-->
                 <DataGridTextColumn Header="現在の更新日時" Binding="{Binding update_dtime, StringFormat=yyyy/MM/dd-HH:mm:ss}" IsReadOnly="True" Visibility="{Binding Source={x:Reference updateTimeStampChcekBox},Path=IsChecked,Converter={StaticResource BoolVisibilityConverter}}"/>
@@ -105,7 +112,8 @@
     <i:Interaction.Triggers>
         <prism:InteractionRequestTrigger SourceObject="{Binding MessageBoxRequest}">
             <prism:PopupWindowAction IsModal="True" WindowStartupLocation="CenterOwner">
-                <prism:PopupWindowAction.WindowStyle><!-- タスクバーで別Windowとなるのを抑制-->
+                <prism:PopupWindowAction.WindowStyle>
+                    <!-- タスクバーで別Windowとなるのを抑制-->
                     <Style TargetType="Window">
                         <Setter Property="ShowInTaskbar" Value="False"/>
                         <Setter Property="SizeToContent" Value="WidthAndHeight"/>
