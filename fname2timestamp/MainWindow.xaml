@@ -32,28 +32,28 @@
                 <Button x:Name="btnSelExec" Width="100" IsEnabled="{Binding CanChangeTimestamp}"
                     Command="{Binding ChangeTimestampCommand}">
                     <StackPanel Orientation="Horizontal">
-                        <Label Content="選択実行" ></Label>
+                        <Label Content="選択リネーム" ></Label>
                         <Image Source="Resource/Calender.ico" Width="24" Height="24" HorizontalAlignment="Left"></Image>
                     </StackPanel>
                 </Button>
                 <Button x:Name="btnAllExec" Width="100" 
                     Command="{Binding ChangeAllTimestampCommand}" IsEnabled="{Binding CanChangeAllTimestamp}">
                     <StackPanel Orientation="Horizontal">
-                        <Label Content="全実行"></Label>
+                        <Label Content="全リネーム"></Label>
                         <Image Source="Resource/cal_all.ico" Width="24" Height="24" HorizontalAlignment="Left"></Image>
                     </StackPanel>
                 </Button>
-                <Button x:Name="btnSelDel" Width="150" IsEnabled="{Binding CanDeleteFile}"
+                <Button x:Name="btnSelDel" Width="120" IsEnabled="{Binding CanDeleteFile}"
                     Command="{Binding RemoveFileCommand}">
                     <StackPanel Orientation="Horizontal">
-                        <Label Content="リストから選択削除"></Label>
+                        <Label Content="選択クリア"></Label>
                         <Image Source="Resource/Trashbox.ico" Width="24" Height="24" HorizontalAlignment="Left"></Image>
                     </StackPanel>
                 </Button>
                 <Button x:Name="btnAllDel" Width="120" 
                     Command="{Binding RemoveAllFileCommand}" IsEnabled="{Binding HasFile}" HorizontalAlignment="Left">
                     <StackPanel Orientation="Horizontal">
-                        <Label Content="全リスト削除"></Label>
+                        <Label Content="全クリア"></Label>
                         <Image Width="24" Height="24" HorizontalAlignment="Left" Source="Resource/Trashbox.ico"/>
                     </StackPanel>
                 </Button>
