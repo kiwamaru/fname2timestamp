@@ -32,14 +32,14 @@
                 <Button x:Name="btnSelExec" Width="100" IsEnabled="{Binding CanChangeTimestamp}"
                     Command="{Binding ChangeTimestampCommand}">
                     <StackPanel Orientation="Horizontal">
-                        <Label Content="選択リネーム" ></Label>
+                        <Label Content="選択変更" ></Label>
                         <Image Source="Resource/Calender.ico" Width="24" Height="24" HorizontalAlignment="Left"></Image>
                     </StackPanel>
                 </Button>
                 <Button x:Name="btnAllExec" Width="100" 
                     Command="{Binding ChangeAllTimestampCommand}" IsEnabled="{Binding CanChangeAllTimestamp}">
                     <StackPanel Orientation="Horizontal">
-                        <Label Content="全リネーム"></Label>
+                        <Label Content="全変更"></Label>
                         <Image Source="Resource/cal_all.ico" Width="24" Height="24" HorizontalAlignment="Left"></Image>
                     </StackPanel>
                 </Button>
