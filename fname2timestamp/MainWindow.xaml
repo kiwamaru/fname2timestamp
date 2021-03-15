@@ -13,54 +13,70 @@
         >
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolVisibilityConverter"/>
+        <local:EnumToBooleanConverter x:Key="EnumToBoolean"/>
+        <local:EnumToVisibilityConverter x:Key="EnumToVisibility"/>
     </Window.Resources>
     <DockPanel>
         <Grid DockPanel.Dock="Top" >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="180"/>
-                <ColumnDefinition Width="120"/>
+                <ColumnDefinition Width="180"/>
+                <ColumnDefinition Width="180"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <GroupBox Header="タイムスタンプ変更対象" Grid.Column="0">
+            <GroupBox Header="機能" Grid.Column="0" Visibility="Hidden">
+                <StackPanel>
+                    <RadioButton IsChecked="{Binding Mode,Mode=TwoWay,Converter={StaticResource EnumToBoolean},ConverterParameter=Timestamp,UpdateSourceTrigger=PropertyChanged}" GroupName="TimestampOrRename" Content="タイムスタンプ変更"/>
+                    <RadioButton IsChecked="{Binding Mode,Mode=TwoWay,Converter={StaticResource EnumToBoolean},ConverterParameter=Rename,UpdateSourceTrigger=PropertyChanged}" GroupName="TimestampOrRename" Content="ファイルリネームのみ"/>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox Header="タイムスタンプ変更対象"
+                      Grid.Column="1" Visibility="{Binding Mode,Mode=TwoWay,
+                                        Converter={StaticResource EnumToVisibility},
+                                        ConverterParameter=Timestamp,
+                                        UpdateSourceTrigger=PropertyChanged}">
                 <StackPanel Orientation="Horizontal">
-                <CheckBox x:Name="updateTimeStampChcekBox" Content="更新日時" 
-                           IsChecked="{Binding UpdateDate}"
-                      Command="{Binding UpdateFileCommand}"/>
-                <CheckBox x:Name="creationTimeStampChcekBox" Content="作成日時" 
-                          Margin="10,0,0,0" IsChecked="{Binding CreationDate}"
-                      Command="{Binding UpdateFileCommand}"/>
+                <CheckBox x:Name="updateTimeStampChcekBox" Content="更新日"
+                        VerticalAlignment="Center" 
+                        IsChecked="{Binding UpdateDate}"
+                        Command="{Binding UpdateFileCommand}"/>
+                <CheckBox x:Name="creationTimeStampChcekBox" Content="作成日" 
+                        VerticalAlignment="Center" 
+                        Margin="10,0,0,0" IsChecked="{Binding CreationDate}"
+                        Command="{Binding UpdateFileCommand}"/>
             </StackPanel>
             </GroupBox>
-            <GroupBox Header="ファイル名変更" Grid.Column="1" Width="120">
+            <GroupBox Header="リネーム" Grid.Column="2" Width="120">
                 <CheckBox Content="日時情報を削除"
-                          VerticalAlignment="Center" Margin="0" IsChecked="{Binding RemoveDateRename}"
-                          ToolTip="ファイル名から日付情報を削除"/>
+                          x:Name="RemoveDateRename"
+                          VerticalAlignment="Center" IsChecked="{Binding RemoveDateRename}"
+                          ToolTip="ファイル名から日付情報を削除"
+                          Command="{Binding UpdateFileCommand}"/>
             </GroupBox>
 
-            <StackPanel VerticalAlignment="Center" Orientation="Horizontal" HorizontalAlignment="Right" Grid.Column="2">
-                <Button x:Name="btnSelExec" Width="100" IsEnabled="{Binding CanChangeTimestamp}"
+            <StackPanel VerticalAlignment="Center" 
+                        Orientation="Horizontal" HorizontalAlignment="Right" Grid.Column="3">
+                <Button x:Name="btnSelExec" Width="100"
                     Command="{Binding ChangeTimestampCommand}">
                     <StackPanel Orientation="Horizontal">
-                        <Label Content="選択変更" ></Label>
+                        <Label Content="変更" ></Label>
                         <Image Source="Resource/Calender.ico" Width="24" Height="24" HorizontalAlignment="Left"></Image>
                     </StackPanel>
                 </Button>
                 <Button x:Name="btnAllExec" Width="100" 
-                    Command="{Binding ChangeAllTimestampCommand}" IsEnabled="{Binding CanChangeAllTimestamp}">
+                    Command="{Binding ChangeAllTimestampCommand}">
                     <StackPanel Orientation="Horizontal">
                         <Label Content="全変更"></Label>
                         <Image Source="Resource/cal_all.ico" Width="24" Height="24" HorizontalAlignment="Left"></Image>
                     </StackPanel>
                 </Button>
-                <Button x:Name="btnSelDel" Width="120" IsEnabled="{Binding CanDeleteFile}"
-                    Command="{Binding RemoveFileCommand}">
+                <Button Width="120" Command="{Binding RemoveFileCommand}">
                     <StackPanel Orientation="Horizontal">
-                        <Label Content="選択クリア"></Label>
+                        <Label Content="クリア"></Label>
                         <Image Source="Resource/Trashbox.ico" Width="24" Height="24" HorizontalAlignment="Left"></Image>
                     </StackPanel>
                 </Button>
-                <Button x:Name="btnAllDel" Width="120" 
-                    Command="{Binding RemoveAllFileCommand}" IsEnabled="{Binding HasFile}" HorizontalAlignment="Left">
+                <Button Width="120"  Command="{Binding RemoveAllFileCommand}" HorizontalAlignment="Left">
                     <StackPanel Orientation="Horizontal">
                         <Label Content="全クリア"></Label>
                         <Image Width="24" Height="24" HorizontalAlignment="Left" Source="Resource/Trashbox.ico"/>
@@ -74,6 +90,7 @@
             <DataGrid.Resources>
                 <local:MyBoolConverter x:Key="MyBoolConverter"/>
                 <local:MyDateTimeConverter x:Key="MyDateTimeConverter"/>
+                <local:BindingProxy x:Key="proxy" Data="{Binding}"/>
             </DataGrid.Resources>
             <DataGrid.ItemContainerStyle>
                 <Style TargetType="DataGridRow">
@@ -95,7 +112,11 @@
                 <!--<DataGridTextColumn Header="フルパス" Binding="{Binding path}" Width="60" IsReadOnly="True"/>-->
                 <DataGridTextColumn Header="現在の更新日時" Binding="{Binding update_dtime, StringFormat=yyyy/MM/dd-HH:mm:ss}" IsReadOnly="True" Visibility="{Binding Source={x:Reference updateTimeStampChcekBox},Path=IsChecked,Converter={StaticResource BoolVisibilityConverter}}"/>
                 <DataGridTextColumn Header="現在の作成日時" Binding="{Binding create_dtime, StringFormat=yyyy/MM/dd-HH:mm:ss}" IsReadOnly="True" Visibility="{Binding Source={x:Reference creationTimeStampChcekBox},Path=IsChecked,Converter={StaticResource BoolVisibilityConverter}}"/>
-                <DataGridTextColumn Header="変更実行後のタイムスタンプ" Binding="{Binding f2t_dtime, Converter={StaticResource MyDateTimeConverter}, StringFormat=yyyy/MM/dd-HH:mm:ss}" IsReadOnly="True"/>
+                <DataGridTextColumn Header="変更実行後のタイムスタンプ" Binding="{Binding f2t_dtime, Converter={StaticResource MyDateTimeConverter}, StringFormat=yyyy/MM/dd-HH:mm:ss}" IsReadOnly="True"
+                                    Visibility="{Binding Data.ChangeTimestamp,
+                                        Converter={StaticResource BoolVisibilityConverter},Source={StaticResource proxy}}"/>
+                <DataGridTextColumn Header="変更後のファイル名" Binding="{Binding RenameFileName}" Width="200" MinWidth="100" IsReadOnly="True"
+                                        Visibility="{Binding Source={x:Reference RemoveDateRename},Path=IsChecked,Converter={StaticResource BoolVisibilityConverter}}"/>
                 <!--<DataGridTextColumn Header="変換可否" Binding="{Binding isValid, Converter={StaticResource MyBoolConverter}}"/>-->
                 <!--<DataGridTextColumn Header="現在のアクセス日時" Binding="{Binding access_dtime, StringFormat=yyyy/MM/dd-HH:mm:ss}"/>-->
                 <!--<DataGridTextColumn Header="ファイルサイズ" Binding="{Binding size, StringFormat=\{0:N0\} bytes}" IsReadOnly="True"/>-->

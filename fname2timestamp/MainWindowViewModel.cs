@@ -10,6 +10,11 @@ using Prism.Interactivity.InteractionRequest;
 
 namespace fname2timestamp
 {
+    public enum Mode
+    {
+        Timestamp,
+        Rename,
+    }
     public class MainWindowViewModel : BindableBase, IDisposable
     {
         //private uint index;
@@ -17,6 +22,18 @@ namespace fname2timestamp
 
         public FileListModel fileListModel { get; } = new FileListModel();
 
+        private Mode _mode = Mode.Timestamp;
+        public Mode Mode
+        {
+            get { return _mode; }
+            set { this.SetProperty(ref _mode, value); }
+        }
+        private bool _changeTimestamp = true;
+        public bool ChangeTimestamp
+        {
+            get { return _changeTimestamp; }
+            set { this.SetProperty(ref _changeTimestamp, value); }
+        }
         /// <summary>
         /// ドロップしたファイルのファイルリスト
         /// </summary>
@@ -145,22 +162,22 @@ namespace fname2timestamp
                 () =>
                 {
                     OnChangeTimestamp();
-                }, () => true);
-            RemoveFileCommand = new DelegateCommand(
-                () =>
-                {
-                    RemoveFile();
-                }, () => true);
+                }, () => CanChangeTimestamp).ObservesProperty(() => CanChangeTimestamp);
             ChangeAllTimestampCommand = new DelegateCommand(
                 () =>
                 {
                     OnChangeAllTimestamp();
-                }, () => true);
+                }, () => CanChangeAllTimestamp).ObservesProperty(() => CanChangeAllTimestamp);
+            RemoveFileCommand = new DelegateCommand(
+                () =>
+                {
+                    RemoveFile();
+                }, () => CanDeleteFile).ObservesProperty(() => CanDeleteFile);
             RemoveAllFileCommand = new DelegateCommand(
                 () =>
                 {
                     RemoveAllFile();
-                }, () => true);
+                }, () => HasFile).ObservesProperty(() => HasFile);
             UpdateFileCommand = new DelegateCommand(
                 () =>
                 {
@@ -229,6 +246,10 @@ namespace fname2timestamp
             {
                 u |= FileListModel.UPDATE_FLAG.CREATTION_DATE;
             }
+            if(RemoveDateRename == true)
+            {
+                u |= FileListModel.UPDATE_FLAG.REMOVE_DATE_FNAME;
+            }
             return u;
         }
 
@@ -277,22 +298,33 @@ namespace fname2timestamp
         {
             if (e.PropertyName == "CreationDate")
             {
-                if (CreationDate == false && UpdateDate == false)
+                if (CreationDate == false && UpdateDate == false && RemoveDateRename == false)
                 {
                     CreationDate = true;
-                    this.showInformationMessage("両方共外すことは出来ません", "エラー");
+                    this.showInformationMessage("すべて外すことは出来ません", "エラー");
                 }
 
             }
             if (e.PropertyName == "UpdateDate")
             {
-                if (CreationDate == false && UpdateDate == false)
+                if (CreationDate == false && UpdateDate == false && RemoveDateRename == false)
                 {
                     UpdateDate = true;
-                    this.showInformationMessage("両方共外すことは出来ません", "エラー");
+                    this.showInformationMessage("すべて外すことは出来ません", "エラー");
                 }
 
             }
+            if(e.PropertyName == nameof(RemoveDateRename))
+            {
+                if (CreationDate == false && UpdateDate == false && RemoveDateRename == false)
+                {
+                    RemoveDateRename = true;
+                    this.showInformationMessage("すべて外すことは出来ません", "エラー");
+                }
+            }
+            if (CreationDate == true && UpdateDate == true) ChangeTimestamp = true;
+            else ChangeTimestamp = false;
+
             if (e.PropertyName == "DraggedFiles")
             {
                 AddFiles(DraggedFiles);

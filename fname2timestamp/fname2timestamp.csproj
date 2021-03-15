@@ -104,6 +104,9 @@
     <Compile Include="Behaviors\ViewModelCleanupBehavior.cs" />
     <Compile Include="Behaviors\FileDragAndDropBehavior.cs" />
     <Compile Include="Behaviors\BindSelectedItemsBehavior.cs" />
+    <Compile Include="BindingProxy.cs" />
+    <Compile Include="EnumToVisibilityConverter.cs" />
+    <Compile Include="EnumToBooleanConverter.cs" />
     <Compile Include="FileListModel.cs" />
     <Compile Include="MainWindowViewModel.cs" />
     <Compile Include="ProgressBar.xaml.cs">

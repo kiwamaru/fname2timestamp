@@ -55,6 +55,7 @@ namespace fname2timestamp
         {
             CREATTION_DATE = 1,//作成日時を変更
             UPDATE_DATE = 1 << 1,//更新日時を変更
+            REMOVE_DATE_FNAME = 1 << 2,//ファイル名から日時情報を削除
 
         };
         public FileListModel()
@@ -121,8 +122,8 @@ namespace fname2timestamp
             foreach (string f in allfiles)
             {
                 CurrentProgress = ((fcount++ * 100) / allfiles.Count);
-
-                DataGridFiles.Add(ConvertToDataGridFile(f, upflag));
+                var a = ConvertToDataGridFile(f, upflag);
+                DataGridFiles.Add(a);
             }
             CurrentProgress = 0;
             return DataGridFiles.Count;
@@ -203,11 +204,16 @@ namespace fname2timestamp
 
                 dt = GetDataTime(fname,out matchString);
 
-                if (upflag.HasFlag(UPDATE_FLAG.CREATTION_DATE) && upflag.HasFlag(UPDATE_FLAG.UPDATE_DATE))
+                if (upflag.HasFlag(UPDATE_FLAG.REMOVE_DATE_FNAME))
                 {
-                    if ((dt == System.IO.File.GetCreationTime(fpath)) && (dt == System.IO.File.GetLastWriteTime(fpath)))
+                    if (string.IsNullOrEmpty(matchString)) throw new ArgumentException("ファイルに日付情報なし");
+                    isValid = true;
+                }
+                else if (upflag.HasFlag(UPDATE_FLAG.CREATTION_DATE) && upflag.HasFlag(UPDATE_FLAG.UPDATE_DATE))
+                {
+                    if ((dt == File.GetCreationTime(fpath)) && (dt == File.GetLastWriteTime(fpath)))
                     {
-                        throw new System.ArgumentException("既に一致済み");
+                        throw new ArgumentException("既に一致済み");
                     }
                     else
                     {
@@ -245,7 +251,7 @@ namespace fname2timestamp
                 f2t_dtime = dt,
                 success = false,
                 err_message = errmsg,
-                DateMatchString = matchString,
+                RenameFileName = RemoveDateFName(fname, matchString),
             };
             return dtf;
         }
@@ -286,8 +292,8 @@ namespace fname2timestamp
                         }
                         if(removeDateRename)
                         {
-                            var newname = RemoveDateFName(o.path, o.DateMatchString);
-                            File.Move(o.path, newname);
+                            var dirName = Path.GetDirectoryName(o.path);
+                            File.Move(o.path, dirName + "\\" + o.RenameFileName);
                         }
 
                         // 更新日時をファイル名の時刻で更新する
@@ -321,12 +327,16 @@ namespace fname2timestamp
         /// <param name="fullpath">元のフルパス</param>
         /// <param name="dateMatchString">日付情報の文字列</param>
         /// <returns></returns>
-        private string RemoveDateFName(string fullpath, string dateMatchString)
+        private string RemoveDateFName(string fileName, string dateMatchString)
         {
-            var dirName = Path.GetDirectoryName(fullpath);
-            var fileName = Path.GetFileName(fullpath);
+            if (string.IsNullOrEmpty(dateMatchString)) return dateMatchString;
+            //var dirName = Path.GetDirectoryName(fullpath);
+            //var fileName = Path.GetFileName(fullpath);
+            //var newFileName = fileName.Replace(dateMatchString, "");
+            //return dirName + "\\" + newFileName.Trim();
+
             var newFileName = fileName.Replace(dateMatchString, "");
-            return dirName + "\\" + newFileName.Trim();
+            return newFileName.Trim();
         }
 
     }

@@ -48,7 +48,7 @@ namespace DataGridFiles
         public string FileName { get; set; }
         public string path { get; set; }
         public string ext { get; set; }
-        public string DateMatchString { get; set; }
+        public string RenameFileName { get; set; }
         public DateTime update_dtime
         {
             get => _update_dtime;
