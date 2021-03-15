@@ -3,6 +3,7 @@ using Prism.Mvvm;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
@@ -132,8 +133,9 @@ namespace fname2timestamp
         /// </summary>
         /// <param name="fname"></param>
         /// <returns></returns>
-        private DateTime GetDataTime(string fname)
+        private DateTime GetDataTime(string fname,out string matchString)
         {
+            matchString = "";
             //YYYY-MM-DD-mm-dd-ss
             Regex dtimePattern_spl = new Regex(@"(\d{4})[\D]+(\d{2})[\D]+(\d{2})[\D]+(\d{2})[\D]+(\d{2})(?:[\D]+(\d+)){0,1}", System.Text.RegularExpressions.RegexOptions.Compiled);
 
@@ -145,6 +147,7 @@ namespace fname2timestamp
             if (m_spl.Success || m_seq.Success)
             {
                 Match m = m_spl.Success ? m_spl : m_seq;
+                matchString = m.Value;
                 for (int i = 1; i < m.Groups.Count; i++)
                 {
                     for (int j = 0; j < m.Groups[i].Captures.Count; j++)
@@ -167,7 +170,7 @@ namespace fname2timestamp
             {
                 throw new System.ArgumentException("ファイル名に日時情報がありません");
             }
-            return new DateTime(dtl[0], dtl[1], dtl[2], dtl[3], dtl[4], dtl[5]); ;
+            return new DateTime(dtl[0], dtl[1], dtl[2], dtl[3], dtl[4], dtl[5]);
         }
         /// <summary>
         /// ファイルパスからデータグリッド表示用のクラスに変換する
@@ -183,7 +186,7 @@ namespace fname2timestamp
             string fname = "";
             string fext = "";
             long fsize = 0;
-
+            string matchString = "";
             System.IO.FileAttributes attr;
             try
             {
@@ -198,7 +201,7 @@ namespace fname2timestamp
                     throw new System.UnauthorizedAccessException("ファイルが読み取り専用属性");
                 }
 
-                dt = GetDataTime(fname);
+                dt = GetDataTime(fname,out matchString);
 
                 if (upflag.HasFlag(UPDATE_FLAG.CREATTION_DATE) && upflag.HasFlag(UPDATE_FLAG.UPDATE_DATE))
                 {
@@ -233,7 +236,7 @@ namespace fname2timestamp
                 //num = ++index,
                 isValid = isValid,
                 path = fpath,
-                name = fname,
+                FileName = fname,
                 ext = fext,
                 update_dtime = System.IO.File.GetLastWriteTime(fpath),
                 create_dtime = System.IO.File.GetCreationTime(fpath),
@@ -242,6 +245,7 @@ namespace fname2timestamp
                 f2t_dtime = dt,
                 success = false,
                 err_message = errmsg,
+                DateMatchString = matchString,
             };
             return dtf;
         }
@@ -261,7 +265,7 @@ namespace fname2timestamp
         /// </summary>
         /// <param name="list"></param>
         /// <param name="upflag"></param>
-        public bool ChangeTimeStamp(List<DataGridFile> list, UPDATE_FLAG upflag)
+        public bool ChangeTimeStamp(List<DataGridFile> list, UPDATE_FLAG upflag,bool removeDateRename)
         {
             bool exist = false;
             foreach (DataGridFile o in list)
@@ -272,13 +276,18 @@ namespace fname2timestamp
                     {
                         if (upflag.HasFlag(UPDATE_FLAG.CREATTION_DATE))
                         {
-                            System.IO.File.SetCreationTime(o.path, o.f2t_dtime);//作成日時
-                            o.create_dtime = System.IO.File.GetCreationTime(o.path);
+                            File.SetCreationTime(o.path, o.f2t_dtime);//作成日時
+                            o.create_dtime = File.GetCreationTime(o.path);
                         }
                         if (upflag.HasFlag(UPDATE_FLAG.UPDATE_DATE))
                         {
-                            System.IO.File.SetLastWriteTime(o.path, o.f2t_dtime);
-                            o.update_dtime = System.IO.File.GetLastWriteTime(o.path);
+                            File.SetLastWriteTime(o.path, o.f2t_dtime);
+                            o.update_dtime = File.GetLastWriteTime(o.path);
+                        }
+                        if(removeDateRename)
+                        {
+                            var newname = RemoveDateFName(o.path, o.DateMatchString);
+                            File.Move(o.path, newname);
                         }
 
                         // 更新日時をファイル名の時刻で更新する
@@ -305,6 +314,19 @@ namespace fname2timestamp
             {
                 DataGridFiles.Remove(o);
             }
+        }
+        /// <summary>
+        /// 日付情報を削除したファイル名を返す（フルパス）
+        /// </summary>
+        /// <param name="fullpath">元のフルパス</param>
+        /// <param name="dateMatchString">日付情報の文字列</param>
+        /// <returns></returns>
+        private string RemoveDateFName(string fullpath, string dateMatchString)
+        {
+            var dirName = Path.GetDirectoryName(fullpath);
+            var fileName = Path.GetFileName(fullpath);
+            var newFileName = fileName.Replace(dateMatchString, "");
+            return dirName + "\\" + newFileName.Trim();
         }
 
     }

@@ -45,9 +45,10 @@ namespace DataGridFiles
         private readonly bool fname_validate;
 #pragma warning restore CS0169 // フィールド 'DataGridFile.fname_validate' は使用されていません。
         public uint num { get; set; }
-        public string name { get; set; }
+        public string FileName { get; set; }
         public string path { get; set; }
         public string ext { get; set; }
+        public string DateMatchString { get; set; }
         public DateTime update_dtime
         {
             get => _update_dtime;

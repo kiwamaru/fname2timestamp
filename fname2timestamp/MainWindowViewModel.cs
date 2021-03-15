@@ -56,6 +56,16 @@ namespace fname2timestamp
         }
 
         /// <summary>
+        /// ファイル名から日時情報を削除するか
+        /// </summary>
+        private bool removeDateRename = false;
+        public bool RemoveDateRename
+        {
+            get { return removeDateRename; }
+            set { this.SetProperty(ref removeDateRename, value); }
+        }
+
+        /// <summary>
         /// Vのステータスバーのテキストメッセージ
         /// </summary>
         private String statusBarMessage;
@@ -233,7 +243,7 @@ namespace fname2timestamp
         public void OnChangeAllTimestamp()
         {
             ListSelectedItem.Clear();
-            if (!fileListModel.ChangeTimeStamp(fileListModel.DataGridFiles.ToList(), GetUpdateFlag()))
+            if (!fileListModel.ChangeTimeStamp(fileListModel.DataGridFiles.ToList(), GetUpdateFlag(), RemoveDateRename))
             {
                 this.showInformationMessage("時刻変換可能なファイルがリストにありません", "エラー");
             }
@@ -242,7 +252,7 @@ namespace fname2timestamp
         {
             var l = new ObservableCollection<DataGridFile>(ListSelectedItem);
             ListSelectedItem.Clear();
-            if (!fileListModel.ChangeTimeStamp(l.ToList(), GetUpdateFlag()))
+            if (!fileListModel.ChangeTimeStamp(l.ToList(), GetUpdateFlag(), RemoveDateRename))
             {
                 this.showInformationMessage("時刻変換可能なファイルがリストにありません", "エラー");
             }
