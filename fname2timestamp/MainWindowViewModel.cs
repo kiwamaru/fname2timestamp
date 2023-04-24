@@ -22,6 +22,8 @@ namespace fname2timestamp
 
         public FileListModel fileListModel { get; } = new FileListModel();
 
+        public RenameFileListModel renamefileListModel { get; } = new RenameFileListModel();
+
         private Mode _mode = Mode.Timestamp;
         public Mode Mode
         {
@@ -70,6 +72,24 @@ namespace fname2timestamp
         {
             get { return updateDate; }
             set { this.SetProperty(ref updateDate, value); }
+        }
+        /// <summary>
+        /// 作成日を変更するかどうか
+        /// </summary>
+        private bool creationDateRename;
+        public bool CreationDateRename
+        {
+            get { return creationDateRename; }
+            set { this.SetProperty(ref creationDateRename, value); }
+        }
+        /// <summary>
+        /// 更新日を変更するかどうか
+        /// </summary>
+        private bool updateDateRename;
+        public bool UpdateDateRename
+        {
+            get { return updateDateRename; }
+            set { this.SetProperty(ref updateDateRename, value); }
         }
 
         /// <summary>
@@ -133,9 +153,9 @@ namespace fname2timestamp
         /// コマンド
         /// </summary>
         public DelegateCommand ChangeTimestampCommand { get; private set; }
-        public DelegateCommand RemoveFileCommand { get; private set; }
-        public DelegateCommand ChangeAllTimestampCommand { get; private set; }
-        public DelegateCommand RemoveAllFileCommand { get; private set; }
+        public DelegateCommand RenameFromTimestampCommand { get; private set; }
+        
+        public DelegateCommand ListClearCommand { get; private set; }
         public DelegateCommand UpdateFileCommand { get; private set; }
         public DelegateCommand SelectedCellsChangedCommand { get; private set; }
 
@@ -148,13 +168,21 @@ namespace fname2timestamp
             get { return fileList; }
             set { this.SetProperty(ref fileList, value); }
         }
+        private ObservableCollection<DataGridFile> renamefileList;
+        public ObservableCollection<DataGridFile> RenameFileList
+        {
+            get { return renamefileList; }
+            set { this.SetProperty(ref renamefileList, value); }
+        }
 
         public MainWindowViewModel()
         {
             pbw = new ProgresBarWindow();
 
             fileListModel.PropertyChanged += FileListModel_PropertyChanged;
+            renamefileListModel.PropertyChanged += RenamefileListModel_PropertyChanged;
             FileList = fileListModel.DataGridFiles;
+            RenameFileList = renamefileListModel.DataGridFiles;
             this.PropertyChanged += MainWindowViewModel_PropertyChanged;
             this.MessageBoxRequest = new InteractionRequest<INotification>();
 
@@ -162,21 +190,16 @@ namespace fname2timestamp
                 () =>
                 {
                     OnChangeTimestamp();
-                }, () => CanChangeTimestamp).ObservesProperty(() => CanChangeTimestamp);
-            ChangeAllTimestampCommand = new DelegateCommand(
+                }, () => true);
+            RenameFromTimestampCommand = new DelegateCommand(
                 () =>
                 {
-                    OnChangeAllTimestamp();
-                }, () => CanChangeAllTimestamp).ObservesProperty(() => CanChangeAllTimestamp);
-            RemoveFileCommand = new DelegateCommand(
+                    OnRenameFromTimestamp();
+                }, () => true);
+            ListClearCommand = new DelegateCommand(
                 () =>
                 {
-                    RemoveFile();
-                }, () => CanDeleteFile).ObservesProperty(() => CanDeleteFile);
-            RemoveAllFileCommand = new DelegateCommand(
-                () =>
-                {
-                    RemoveAllFile();
+                    ClearFileList();
                 }, () => HasFile).ObservesProperty(() => HasFile);
             UpdateFileCommand = new DelegateCommand(
                 () =>
@@ -193,10 +216,14 @@ namespace fname2timestamp
             this.CanDeleteFile = false;
             this.StatusBarMessage = "↑ファイルをドロップしてください";
             this.CreationDate = true;
+            this.CreationDateRename = true;
             this.UpdateDate = true;
             this.HasFile = false;
 
         }
+
+
+
         public void Dispose()
         {
             pbw.Close();
@@ -252,13 +279,35 @@ namespace fname2timestamp
             }
             return u;
         }
-
+        private FileListModel.UPDATE_FLAG GetUpdateFlagRename()
+        {
+            FileListModel.UPDATE_FLAG u = 0;
+            if (UpdateDateRename == true)
+            {
+                u |= FileListModel.UPDATE_FLAG.UPDATE_DATE;
+            }
+            if (CreationDateRename == true)
+            {
+                u |= FileListModel.UPDATE_FLAG.CREATTION_DATE;
+            }
+            return u;
+        }
         public void AddFiles(IEnumerable<string> files)
         {
             ListSelectedItem.Clear();
-            if (fileListModel.DropFileListToDataGridFile(files, GetUpdateFlag()) <= 0)
+            if(this.Mode == Mode.Timestamp) 
+            { 
+                if (fileListModel.DropFileListToDataGridFile(files, GetUpdateFlag()) <= 0)
+                {
+                    this.showInformationMessage("ファイルがありません", "エラー");
+                }
+            }
+            else
             {
-                this.showInformationMessage("ファイルがありません", "エラー");
+                if(this.renamefileListModel.DropFileListToDataGridFile(files, GetUpdateFlagRename()) <= 0)
+                {
+                    this.showInformationMessage("ファイルがありません", "エラー");
+                }
             }
         }
         public void OnChangeAllTimestamp()
@@ -278,25 +327,30 @@ namespace fname2timestamp
                 this.showInformationMessage("時刻変換可能なファイルがリストにありません", "エラー");
             }
         }
-        public void RemoveAllFile()
-        {
-            ListSelectedItem.Clear();
-            fileListModel.RemoveDataGridFile(fileListModel.DataGridFiles.ToList());
-        }
-        public void RemoveFile()
+        public void OnRenameFromTimestamp()
         {
             var l = new ObservableCollection<DataGridFile>(ListSelectedItem);
             ListSelectedItem.Clear();
-            fileListModel.RemoveDataGridFile(l.ToList());
+            if (!renamefileListModel.RenameFromTimestamp(l.ToList(), GetUpdateFlag()))
+            {
+                this.showInformationMessage("リネーム可能なファイルがリストにありません", "エラー");
+            }
+        }
+        public void ClearFileList()
+        {
+            ListSelectedItem.Clear();
+            fileListModel.RemoveDataGridFile(fileListModel.DataGridFiles.ToList());
+            renamefileListModel.RemoveDataGridFile(renamefileListModel.DataGridFiles.ToList());
         }
         public void ChangeTimestampType()
         {
             fileListModel.UpdateList(GetUpdateFlag());
+            renamefileListModel.UpdateList(GetUpdateFlagRename());
         }
 
         private void MainWindowViewModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == "CreationDate")
+            if (e.PropertyName == nameof(CreationDate))
             {
                 if (CreationDate == false && UpdateDate == false && RemoveDateRename == false)
                 {
@@ -305,14 +359,13 @@ namespace fname2timestamp
                 }
 
             }
-            if (e.PropertyName == "UpdateDate")
+            if (e.PropertyName == nameof(UpdateDate))
             {
                 if (CreationDate == false && UpdateDate == false && RemoveDateRename == false)
                 {
                     UpdateDate = true;
                     this.showInformationMessage("すべて外すことは出来ません", "エラー");
                 }
-
             }
             if(e.PropertyName == nameof(RemoveDateRename))
             {
@@ -322,12 +375,21 @@ namespace fname2timestamp
                     this.showInformationMessage("すべて外すことは出来ません", "エラー");
                 }
             }
+            if (e.PropertyName == nameof(CreationDateRename) || e.PropertyName == nameof(UpdateDateRename))
+            {
+                //ChangeTimestampType();
+            }
+
             if (CreationDate == true && UpdateDate == true) ChangeTimestamp = true;
             else ChangeTimestamp = false;
 
-            if (e.PropertyName == "DraggedFiles")
+            if (e.PropertyName == nameof(DraggedFiles))
             {
                 AddFiles(DraggedFiles);
+            }
+            if(e.PropertyName == nameof(Mode))
+            {
+                this.ClearFileList();
             }
         }
 
@@ -344,7 +406,7 @@ namespace fname2timestamp
                 return;
             }
 
-            if (e.PropertyName == "CurrentProgress")
+            if (e.PropertyName == nameof(FileListModel.CurrentProgress))
             {
                 int progn = fileListModel.CurrentProgress;
                 if (progn > 0)
@@ -358,7 +420,7 @@ namespace fname2timestamp
                     pbw.Hide();
                 }
             }
-            else if (e.PropertyName == "FileListCount" || e.PropertyName == "CanFileListCount")
+            else if (e.PropertyName == nameof(FileListModel.FileListCount) || e.PropertyName == nameof(FileListModel.CanFileListCount))
             {
                 if (fileListModel.FileListCount > 0)
                 {
@@ -380,6 +442,49 @@ namespace fname2timestamp
                 }
             }
 
+        }
+        private void RenamefileListModel_PropertyChanged(object sender, PropertyChangedEventArgs e)
+        {
+            if (!(sender is RenameFileListModel))
+            {
+                return;
+            }
+
+            if (e.PropertyName == nameof(RenameFileListModel.CurrentProgress))
+            {
+                int progn = renamefileListModel.CurrentProgress;
+                if (progn > 0)
+                {
+                    pbw.Show();
+                    pbw.Topmost = true;
+                    pbw.FileRegexProgress(progn);
+                }
+                else
+                {
+                    pbw.Hide();
+                }
+            }
+            else if (e.PropertyName == nameof(RenameFileListModel.FileListCount) || e.PropertyName == nameof(RenameFileListModel.CanFileListCount))
+            {
+                if (renamefileListModel.FileListCount > 0)
+                {
+                    this.StatusBarMessage = renamefileListModel.FileListCount + "個のファイル  うちタイムスタンプ変更可能ファイル" + renamefileListModel.CanFileListCount + "個";
+                    if (renamefileListModel.CanFileListCount > 0)
+                    {
+                        CanChangeAllTimestamp = true;
+                    }
+                    else
+                    {
+                        CanChangeAllTimestamp = false;
+                    }
+                    HasFile = true;
+                }
+                else
+                {
+                    this.StatusBarMessage = "↑ファイルをドロップしてください";
+                    HasFile = false;
+                }
+            }
         }
 
     }

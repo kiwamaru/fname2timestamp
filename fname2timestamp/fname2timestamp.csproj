@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>fname2timestamp</RootNamespace>
     <AssemblyName>fname2timestamp</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{60dc8134-eba5-43b8-bcc9-bb4bc16c2548};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
@@ -107,6 +107,7 @@
     <Compile Include="BindingProxy.cs" />
     <Compile Include="EnumToVisibilityConverter.cs" />
     <Compile Include="EnumToBooleanConverter.cs" />
+    <Compile Include="RenameFileListModel.cs" />
     <Compile Include="FileListModel.cs" />
     <Compile Include="MainWindowViewModel.cs" />
     <Compile Include="ProgressBar.xaml.cs">

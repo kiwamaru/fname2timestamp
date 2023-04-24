@@ -47,7 +47,6 @@ namespace DataGridFiles
         public uint num { get; set; }
         public string FileName { get; set; }
         public string path { get; set; }
-        public string ext { get; set; }
         public string RenameFileName { get; set; }
         public DateTime update_dtime
         {
@@ -68,7 +67,6 @@ namespace DataGridFiles
             }
         }
         public DateTime access_dtime { get; set; }
-        public long size { get; set; }
         public DateTime f2t_dtime { get; set; }
         public string err_message
         {
